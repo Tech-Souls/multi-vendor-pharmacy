@@ -16,26 +16,16 @@ const buildImageUrl = (imagePath) => {
   if (!imagePath) return null;
   
   try {
-    // Fix backslashes (Windows issue)
     let cleanPath = imagePath.replace(/\\/g, '/');
-    
-    // Remove leading slash (avoid double slashes)
     cleanPath = cleanPath.replace(/^\//, '');
-    
-    // Clean base URL
     const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:4000').replace(/\/$/, '');
     
-    // If it's already a full URL
     if (cleanPath.startsWith('http://') || cleanPath.startsWith('https://')) {
       return cleanPath;
     }
-    
-    // If it's from public folder (starts with /)
     if (cleanPath.startsWith('/')) {
       return cleanPath;
     }
-    
-    // Build full URL
     return `${baseUrl}/${cleanPath}`;
   } catch (error) {
     console.error('Error building image URL:', error);
@@ -43,20 +33,19 @@ const buildImageUrl = (imagePath) => {
   }
 };
 
-// ─── Image Component with proper error handling ───
+// ─── Image Component ───
 const ProductImage = ({ src, alt, className }) => {
   const [imgSrc, setImgSrc] = useState(src);
   const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
-    // Reset when src changes
     setImgSrc(src);
     setHasError(false);
   }, [src]);
 
   if (!src || hasError) {
     return (
-      <div className="w-11 h-11 bg-gray-50 rounded-xl flex items-center justify-center border border-gray-100">
+      <div className="w-11 h-11 bg-gray-50 rounded-xl flex items-center justify-center border border-gray-100 shrink-0">
         <Package size={16} className="text-gray-200" />
       </div>
     );
@@ -67,16 +56,115 @@ const ProductImage = ({ src, alt, className }) => {
       src={imgSrc}
       alt={alt || 'Product'}
       className={className || "w-full h-full object-cover"}
-      onError={(e) => {
+      onError={() => {
         console.error('❌ Image failed to load:', imgSrc);
         setHasError(true);
-        // Hide the broken image
-        e.target.style.display = 'none';
-      }}
-      onLoad={() => {
-        console.log('✅ Image loaded successfully:', imgSrc);
       }}
     />
+  );
+};
+
+// ─── Mobile Product Card ───
+const ProductCard = ({ product, onEdit, onDelete, onAddToCart, addingToCart }) => {
+  const imageUrl = buildImageUrl(product.image);
+  
+  return (
+    <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow">
+      {/* Top row: Image + Name + Status */}
+      <div className="flex items-start gap-3 mb-3">
+        <div className="w-16 h-16 bg-gray-50 rounded-xl overflow-hidden border border-gray-100 shrink-0">
+          {imageUrl ? (
+            <ProductImage src={imageUrl} alt={product.name} className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <Package size={20} className="text-gray-200" />
+            </div>
+          )}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-black truncate">{product.name}</p>
+          <p className="text-[10px] text-gray-300 font-mono">{product.sku || '—'}</p>
+          {product.brand && (
+            <p className="text-[10px] text-gray-300">{product.brand}</p>
+          )}
+          <div className="flex items-center gap-2 mt-1">
+            <span className="text-[10px] font-semibold bg-gray-100 text-gray-600 px-2 py-0.5 rounded-lg">
+              {product.category}
+            </span>
+            {product.subCategory && (
+              <span className="text-[10px] font-semibold bg-gray-50 text-gray-400 border border-gray-100 px-2 py-0.5 rounded-lg">
+                {product.subCategory}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Middle: Price + Stock + Rx */}
+      <div className="flex items-center justify-between gap-2 mb-3">
+        <div>
+          <p className="text-lg font-bold text-black">
+            £{(product.sellingPrice || product.price || 0).toFixed ? (product.sellingPrice || product.price || 0).toFixed(2) : (product.sellingPrice || product.price || 0)}
+          </p>
+          {product.unitPrice && (
+            <p className="text-[10px] text-gray-400">unit: £{product.unitPrice}</p>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${
+            product.stock > 5  ? 'bg-green-50 text-green-600' :
+            product.stock > 0  ? 'bg-amber-50 text-amber-600'  :
+                                  'bg-red-50 text-red-500'
+          }`}>
+            {product.stock > 0 ? `${product.stock}` : '0'}
+          </span>
+          {product.prescriptionRequired ? (
+            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-red-400 bg-red-50 px-2 py-1 rounded-full">
+              <FileText size={9} /> Rx
+            </span>
+          ) : (
+            <span className="text-[10px] font-bold text-green-500 bg-green-50 px-2 py-1 rounded-full">
+              OTC
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Bottom: Actions */}
+      <div className="flex items-center gap-2 pt-3 border-t border-gray-50">
+        <button
+          onClick={() => onAddToCart(product)}
+          disabled={addingToCart === product._id}
+          className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${
+            product.prescriptionRequired
+              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              : addingToCart === product._id
+              ? 'bg-gray-100 text-gray-400'
+              : 'bg-black text-white hover:bg-gray-800'
+          }`}
+        >
+          {addingToCart === product._id ? (
+            <div className="w-4 h-4 border-2 border-gray-300 border-t-transparent rounded-full animate-spin mx-auto" />
+          ) : product.prescriptionRequired ? (
+            'Rx Required'
+          ) : (
+            'Add to Cart'
+          )}
+        </button>
+        <button
+          onClick={() => onEdit(product)}
+          className="p-2 text-gray-500 hover:text-black hover:bg-gray-50 rounded-xl transition-all"
+        >
+          <Edit size={16} />
+        </button>
+        <button
+          onClick={() => onDelete(product._id)}
+          className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+        >
+          <Trash2 size={16} />
+        </button>
+      </div>
+    </div>
   );
 };
 
@@ -114,14 +202,6 @@ const Products = () => {
     try {
       const res  = await API.get("/medicines");
       const data = Array.isArray(res.data) ? res.data : (res.data.medicines || []);
-      
-      // Log to verify image paths
-      console.log('✅ Products fetched:', data.length);
-      if (data.length > 0) {
-        console.log('📸 Sample image path:', data[0].image);
-        console.log('📸 Full URL would be:', buildImageUrl(data[0].image));
-      }
-      
       setProducts(data);
     } catch (err) {
       console.error("error fetching products:", err);
@@ -189,7 +269,6 @@ const Products = () => {
     });
     if (product.image) {
       const url = buildImageUrl(product.image);
-      console.log('🖼️ Setting preview URL:', url);
       setPreviewUrl(url);
     }
     if (product.additionalImages?.length) {
@@ -306,16 +385,16 @@ const Products = () => {
   return (
     <div className="bg-white min-h-screen text-black">
       <Header title="Products" />
-      <div className="p-6 md:p-8 max-w-[1600px] mx-auto">
+      <div className="p-4 sm:p-6 md:p-8 max-w-[1600px] mx-auto">
 
         {/* ── Header Row ── */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8">
           <div>
             <h1 className="text-xl font-bold text-black">Inventory Management</h1>
             <p className="text-sm text-gray-400 mt-0.5">{products.length} products listed</p>
           </div>
           <button onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 px-5 py-2.5 bg-black text-white text-sm font-semibold rounded-xl hover:bg-gray-900 transition-all">
+            className="flex items-center gap-2 px-4 sm:px-5 py-2.5 bg-black text-white text-sm font-semibold rounded-xl hover:bg-gray-900 transition-all w-full sm:w-auto justify-center">
             <span className="text-base leading-none">+</span> Add Product
           </button>
         </div>
@@ -324,7 +403,7 @@ const Products = () => {
         <div className="flex gap-2 overflow-x-auto pb-2 mb-2 no-scrollbar">
           <button
             onClick={() => { setSelectedCategory("all"); setSelectedSubCategory("all"); }}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+            className={`px-3 sm:px-4 py-2 rounded-xl text-[10px] sm:text-xs font-semibold whitespace-nowrap transition-all ${
               selectedCategory === "all"
                 ? 'bg-black text-white'
                 : 'bg-white text-gray-500 border border-gray-200 hover:border-gray-400'
@@ -334,7 +413,7 @@ const Products = () => {
           {categories.map(cat => (
             <button key={cat}
               onClick={() => { setSelectedCategory(cat); setSelectedSubCategory("all"); }}
-              className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+              className={`px-3 sm:px-4 py-2 rounded-xl text-[10px] sm:text-xs font-semibold whitespace-nowrap transition-all ${
                 selectedCategory === cat
                   ? 'bg-black text-white'
                   : 'bg-white text-gray-500 border border-gray-200 hover:border-gray-400'
@@ -349,7 +428,7 @@ const Products = () => {
           <div className="flex gap-2 overflow-x-auto pb-4 mb-4 no-scrollbar">
             <button
               onClick={() => setSelectedSubCategory("all")}
-              className={`px-4 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+              className={`px-3 sm:px-4 py-1.5 rounded-xl text-[10px] sm:text-xs font-semibold whitespace-nowrap transition-all ${
                 selectedSubCategory === "all"
                   ? 'bg-gray-800 text-white'
                   : 'bg-gray-50 text-gray-500 border border-gray-200 hover:bg-gray-100'
@@ -359,7 +438,7 @@ const Products = () => {
             {activeSubcategories.map(sub => (
               <button key={sub}
                 onClick={() => setSelectedSubCategory(sub)}
-                className={`px-4 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+                className={`px-3 sm:px-4 py-1.5 rounded-xl text-[10px] sm:text-xs font-semibold whitespace-nowrap transition-all ${
                   selectedSubCategory === sub
                     ? 'bg-gray-800 text-white'
                     : 'bg-gray-50 text-gray-500 border border-gray-200 hover:bg-gray-100'
@@ -370,8 +449,8 @@ const Products = () => {
           </div>
         )}
 
-        {/* ── Table ── */}
-        <div className="rounded-2xl border border-gray-100 overflow-hidden">
+        {/* ── Desktop Table View ── */}
+        <div className="hidden md:block rounded-2xl border border-gray-100 overflow-hidden">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-gray-50 text-gray-400 text-[10px] font-bold uppercase tracking-widest border-b border-gray-100">
@@ -401,22 +480,16 @@ const Products = () => {
                   </td>
                 </tr>
               ) : filteredProducts.map(item => {
-                // Build the image URL
                 const imageUrl = buildImageUrl(item.image);
                 
                 return (
                 <tr key={item._id} className="hover:bg-gray-50/60 transition-all">
 
-                  {/* Product */}
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-3">
                       <div className="w-11 h-11 bg-gray-50 rounded-xl overflow-hidden border border-gray-100 shrink-0">
                         {imageUrl ? (
-                          <ProductImage 
-                            src={imageUrl} 
-                            alt={item.name}
-                            className="w-full h-full object-cover"
-                          />
+                          <ProductImage src={imageUrl} alt={item.name} className="w-full h-full object-cover" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
                             <Package size={16} className="text-gray-200" />
@@ -433,7 +506,6 @@ const Products = () => {
                     </div>
                   </td>
 
-                  {/* Category */}
                   <td className="py-4 px-6">
                     <div className="flex flex-col gap-1">
                       <span className="text-[10px] font-semibold bg-gray-100 text-gray-600 px-2 py-0.5 rounded-lg w-fit">
@@ -447,7 +519,6 @@ const Products = () => {
                     </div>
                   </td>
 
-                  {/* Price / Unit */}
                   <td className="py-4 px-6">
                     <p className="text-sm font-bold text-black">
                       £{(item.sellingPrice || item.price || 0).toFixed ? (item.sellingPrice || item.price || 0).toFixed(2) : (item.sellingPrice || item.price || 0)}
@@ -463,7 +534,6 @@ const Products = () => {
                     )}
                   </td>
 
-                  {/* Stock */}
                   <td className="py-4 px-6">
                     <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${
                       item.stock > 5  ? 'bg-green-50 text-green-600' :
@@ -474,7 +544,6 @@ const Products = () => {
                     </span>
                   </td>
 
-                  {/* Rx */}
                   <td className="py-4 px-6">
                     {item.prescriptionRequired ? (
                       <span className="inline-flex items-center gap-1 text-[10px] font-bold text-red-400 bg-red-50 px-2 py-1 rounded-full">
@@ -487,13 +556,11 @@ const Products = () => {
                     )}
                   </td>
 
-                  {/* Actions */}
                   <td className="py-4 px-6 text-right">
                     <div className="flex justify-end gap-1.5">
                       <button
                         onClick={() => handleAddToCart(item)}
                         disabled={addingToCart === item._id}
-                        title={item.prescriptionRequired ? 'Prescription required' : 'Add to cart'}
                         className={`p-2 rounded-lg transition-all ${
                           item.prescriptionRequired
                             ? 'text-red-300 hover:text-red-500 hover:bg-red-50'
@@ -524,12 +591,40 @@ const Products = () => {
             </tbody>
           </table>
         </div>
+
+        {/* ── Mobile Card View ── */}
+        <div className="md:hidden space-y-3">
+          {loading ? (
+            <div className="text-center py-20">
+              <div className="flex flex-col items-center gap-2">
+                <div className="w-6 h-6 border-2 border-gray-200 border-t-black rounded-full animate-spin mx-auto" />
+                <p className="text-xs text-gray-300">Loading inventory...</p>
+              </div>
+            </div>
+          ) : filteredProducts.length === 0 ? (
+            <div className="text-center py-16">
+              <Package size={28} className="text-gray-200 mx-auto mb-2" />
+              <p className="text-sm text-gray-300">No products found</p>
+            </div>
+          ) : (
+            filteredProducts.map(item => (
+              <ProductCard
+                key={item._id}
+                product={item}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onAddToCart={handleAddToCart}
+                addingToCart={addingToCart}
+              />
+            ))
+          )}
+        </div>
       </div>
 
-      {/* ── Modal ── */}
+      {/* ── Modal (same as before) ── */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
-          <div className="bg-white rounded-3xl w-full max-w-5xl p-8 shadow-2xl overflow-y-auto max-h-[95vh]">
+          <div className="bg-white rounded-3xl w-full max-w-5xl p-4 sm:p-8 shadow-2xl overflow-y-auto max-h-[95vh]">
 
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-lg font-bold text-black">
@@ -613,12 +708,12 @@ const Products = () => {
               <div className="w-full lg:w-7/12 space-y-4">
 
                 {/* Specifications */}
-                <div className="bg-gray-50 rounded-2xl p-5 space-y-4">
+                <div className="bg-gray-50 rounded-2xl p-4 sm:p-5 space-y-4">
                   <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
                     Specifications
                   </p>
 
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 block mb-1">Name</label>
                       <input name="name" required value={formData.name} onChange={handleChange}
@@ -633,7 +728,7 @@ const Products = () => {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 block mb-1">Category</label>
                       <select name="category" required value={formData.category} onChange={handleChange}
@@ -660,7 +755,7 @@ const Products = () => {
                     )}
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 block mb-1">Brand</label>
                       <input name="brand" required value={formData.brand} onChange={handleChange}
@@ -675,7 +770,7 @@ const Products = () => {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 block mb-1">Stock</label>
                       <input name="stock" type="number" required value={formData.stock} onChange={handleChange}
@@ -706,10 +801,10 @@ const Products = () => {
                 </div>
 
                 {/* Pricing */}
-                <div className="bg-gray-50 rounded-2xl p-5 space-y-3">
+                <div className="bg-gray-50 rounded-2xl p-4 sm:p-5 space-y-3">
                   <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Pricing</p>
 
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
                       <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 block mb-1">
                         Unit Price (£)
@@ -746,13 +841,13 @@ const Products = () => {
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-3 pt-2">
+                <div className="flex flex-col sm:flex-row gap-3 pt-2">
                   <button type="button" onClick={closeModal}
-                    className="flex-1 py-3 text-gray-400 text-sm font-medium hover:text-black transition-all">
+                    className="sm:flex-1 py-3 text-gray-400 text-sm font-medium hover:text-black transition-all order-2 sm:order-1">
                     Cancel
                   </button>
                   <button type="submit"
-                    className="flex-[2] py-3 bg-black text-white text-sm font-semibold rounded-2xl hover:bg-gray-900 transition-all">
+                    className="sm:flex-[2] py-3 bg-black text-white text-sm font-semibold rounded-2xl hover:bg-gray-900 transition-all order-1 sm:order-2">
                     {selectedId ? "Save Changes" : "Add to Inventory"}
                   </button>
                 </div>

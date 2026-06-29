@@ -29,7 +29,7 @@ const StatusBadge = ({ status }) => {
 const InfoCell = ({ label, value }) => !value ? null : (
   <div className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5">
     <p className="text-[9px] font-bold text-slate-400 tracking-widest mb-0.5 uppercase">{label}</p>
-    <p className="text-xs font-semibold text-slate-700">{value}</p>
+    <p className="text-xs font-semibold text-slate-700 break-words">{value}</p>
   </div>
 );
 
@@ -37,7 +37,7 @@ const Prescriptions = () => {
   const [activeTab, setActiveTab]   = useState("prescriptions");
   const [links, setLinks]           = useState([]);
   const [requests, setRequests]     = useState([]);
-  const [pending, setPending]       = useState([]); // ← real prescriptions
+  const [pending, setPending]       = useState([]);
   const [loading, setLoading]       = useState(true);
   const [expandedId, setExpandedId] = useState(null);
   const [noteInputs, setNoteInputs] = useState({});
@@ -50,7 +50,7 @@ const Prescriptions = () => {
       const [linksRes, reqsRes, pendingRes] = await Promise.all([
         API.get("/prescriber-link/admin/pending"),
         API.get("/prescriber-link/admin/requests"),
-        API.get("/prescriptions/pending"),           // ← real prescriptions
+        API.get("/prescriptions/pending"),
       ]);
       setLinks(Array.isArray(linksRes.data)                     ? linksRes.data                     : []);
       setRequests(Array.isArray(reqsRes.data)                   ? reqsRes.data                      : []);
@@ -63,7 +63,6 @@ const Prescriptions = () => {
     }
   };
 
-  // ── verify real prescription ──────────────────────────────────
   const handleVerify = async (id, status) => {
     try {
       await API.patch(`/prescriptions/verify/${id}`, {
@@ -111,25 +110,25 @@ const Prescriptions = () => {
     <div className="bg-slate-50 min-h-screen font-sans">
       <Header title="Prescription Management" />
 
-      <div className="max-w-6xl mx-auto p-6 space-y-5">
+      <div className="max-w-6xl mx-auto p-4 sm:p-6 space-y-5">
 
-        {/* stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {/* stats - responsive grid */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {[
             { label: "Pending Prescriptions", value: counts.pendingPrescriptions, cls: counts.pendingPrescriptions > 0 ? 'text-amber-600' : 'text-slate-800' },
             { label: "Pending Verifications", value: counts.pendingLinks,         cls: counts.pendingLinks > 0 ? 'text-amber-600' : 'text-slate-800'         },
             { label: "Total Requests",        value: requests.length,             cls: 'text-slate-800'                                                       },
             { label: "Pending Requests",      value: counts.pendingRequests,      cls: counts.pendingRequests > 0 ? 'text-amber-600' : 'text-slate-800'       },
           ].map(s => (
-            <div key={s.label} className="bg-white border border-slate-200 rounded-2xl px-4 py-3 shadow-sm">
-              <p className={`text-2xl font-black ${s.cls}`}>{s.value}</p>
-              <p className="text-[10px] font-bold text-slate-400 tracking-widest mt-0.5 uppercase">{s.label}</p>
+            <div key={s.label} className="bg-white border border-slate-200 rounded-2xl px-3 sm:px-4 py-3 shadow-sm">
+              <p className={`text-xl sm:text-2xl font-black ${s.cls}`}>{s.value}</p>
+              <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 tracking-widest mt-0.5 uppercase">{s.label}</p>
             </div>
           ))}
         </div>
 
-        {/* tabs */}
-        <div className="flex gap-2 flex-wrap bg-white border border-slate-200 rounded-2xl p-1.5 shadow-sm">
+        {/* tabs - scrollable on mobile */}
+        <div className="flex gap-2 flex-wrap bg-white border border-slate-200 rounded-2xl p-1.5 shadow-sm overflow-x-auto">
           {[
             { key: "pending",       label: "Prescriptions",          icon: <FileText size={13} />,    count: counts.pendingPrescriptions },
             { key: "prescriptions", label: "Prescription Requests",  icon: <ClipboardList size={13} />, count: counts.pendingRequests    },
@@ -138,14 +137,15 @@ const Prescriptions = () => {
             <button
               key={t.key}
               onClick={() => { setActiveTab(t.key); setExpandedId(null); }}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-xl text-[10px] sm:text-xs font-bold transition-all whitespace-nowrap ${
                 activeTab === t.key
                   ? 'bg-black text-white shadow-sm'
                   : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
               }`}
             >
               {t.icon}
-              {t.label}
+              <span className="hidden xs:inline">{t.label}</span>
+              <span className="xs:hidden">{t.label.split(' ')[0]}</span>
               {t.count > 0 && (
                 <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold ${
                   activeTab === t.key ? 'bg-white text-black' : 'bg-amber-100 text-amber-700'
@@ -166,8 +166,8 @@ const Prescriptions = () => {
             ) : (
               pending.map(rx => (
                 <div key={rx._id} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                  <div className="flex items-center gap-4 px-5 py-4">
-                    <div className="flex-1 min-w-0">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 px-4 sm:px-5 py-4">
+                    <div className="flex-1 min-w-0 w-full">
                       <div className="flex items-center flex-wrap gap-2 mb-0.5">
                         <p className="text-sm font-bold text-slate-800">
                           {rx.patientDetails?.firstName} {rx.patientDetails?.lastName}
@@ -179,65 +179,68 @@ const Prescriptions = () => {
                           </span>
                         )}
                       </div>
-                      <p className="text-[11px] text-slate-500">
+                      <p className="text-[11px] text-slate-500 truncate">
                         Prescriber: <span className="font-semibold text-slate-700">{rx.prescriberDetails?.name || "—"}</span>
-                        {rx.patientDetails?.email && <span className="ml-2">· {rx.patientDetails.email}</span>}
+                        {rx.patientDetails?.email && <span className="hidden sm:inline ml-2">· {rx.patientDetails.email}</span>}
                       </p>
                     </div>
 
-                    {rx.medications?.length > 0 && (
-                      <div className="shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 bg-blue-50 border border-blue-200 rounded-xl">
-                        <Pill size={12} className="text-blue-600" />
-                        <span className="text-[10px] font-bold text-blue-700">
-                          {rx.medications.length} med{rx.medications.length !== 1 ? "s" : ""}
-                        </span>
-                      </div>
-                    )}
-
-                    {rx.image && (
-                      <button
-                        onClick={() => window.open(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/${rx.image}`, "_blank")}
-                        className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-700 border border-slate-200 rounded-xl text-[10px] font-bold hover:bg-slate-200 transition-colors"
-                      >
-                        <Eye size={12} /> View Image
-                      </button>
-                    )}
-
-                    <div className="shrink-0 flex gap-2">
-                      {rx.status === "pending" && (
-                        <>
-                          <button
-                            onClick={() => handleVerify(rx._id, "approved")}
-                            className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-[10px] font-bold hover:bg-emerald-700 transition-colors"
-                          >
-                            Approve
-                          </button>
-                          <button
-                            onClick={() => handleVerify(rx._id, "rejected")}
-                            className="px-3 py-1.5 border border-red-200 text-red-600 rounded-lg text-[10px] font-bold hover:bg-red-50 transition-colors"
-                          >
-                            Reject
-                          </button>
-                        </>
+                    <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
+                      {rx.medications?.length > 0 && (
+                        <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-blue-50 border border-blue-200 rounded-xl">
+                          <Pill size={12} className="text-blue-600" />
+                          <span className="text-[10px] font-bold text-blue-700">
+                            {rx.medications.length} med{rx.medications.length !== 1 ? "s" : ""}
+                          </span>
+                        </div>
                       )}
-                      {rx.status === "approved" && (
+
+                      {rx.image && (
                         <button
-                          onClick={() => handleVerify(rx._id, "dispensed")}
-                          className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-[10px] font-bold hover:bg-blue-700 transition-colors"
+                          onClick={() => window.open(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/${rx.image}`, "_blank")}
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-700 border border-slate-200 rounded-xl text-[10px] font-bold hover:bg-slate-200 transition-colors"
                         >
-                          Mark Dispensed
+                          <Eye size={12} /> <span className="hidden xs:inline">View Image</span>
                         </button>
                       )}
-                    </div>
 
-                    <button onClick={() => toggle(rx._id)} className="text-slate-400 hover:text-slate-600 transition-colors shrink-0">
-                      {expandedId === rx._id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                    </button>
+                      <div className="flex gap-2">
+                        {rx.status === "pending" && (
+                          <>
+                            <button
+                              onClick={() => handleVerify(rx._id, "approved")}
+                              className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-[10px] font-bold hover:bg-emerald-700 transition-colors"
+                            >
+                              Approve
+                            </button>
+                            <button
+                              onClick={() => handleVerify(rx._id, "rejected")}
+                              className="px-3 py-1.5 border border-red-200 text-red-600 rounded-lg text-[10px] font-bold hover:bg-red-50 transition-colors"
+                            >
+                              Reject
+                            </button>
+                          </>
+                        )}
+                        {rx.status === "approved" && (
+                          <button
+                            onClick={() => handleVerify(rx._id, "dispensed")}
+                            className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-[10px] font-bold hover:bg-blue-700 transition-colors"
+                          >
+                            <span className="hidden xs:inline">Mark Dispensed</span>
+                            <span className="xs:hidden">Dispense</span>
+                          </button>
+                        )}
+                      </div>
+
+                      <button onClick={() => toggle(rx._id)} className="text-slate-400 hover:text-slate-600 transition-colors">
+                        {expandedId === rx._id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                      </button>
+                    </div>
                   </div>
 
                   {expandedId === rx._id && (
-                    <div className="border-t border-slate-100 bg-slate-50/50 px-5 py-4 space-y-3">
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div className="border-t border-slate-100 bg-slate-50/50 px-4 sm:px-5 py-4 space-y-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                         <InfoCell label="phone"       value={rx.patientDetails?.phone} />
                         <InfoCell label="date of birth" value={rx.patientDetails?.dob ? new Date(rx.patientDetails.dob).toLocaleDateString("en-GB") : null} />
                         <InfoCell label="reg number"  value={rx.prescriberDetails?.regNumber} />
@@ -301,60 +304,62 @@ const Prescriptions = () => {
             ) : (
               requests.map(rx => (
                 <div key={rx._id} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                  <div className="flex items-center gap-4 px-5 py-4">
-                    <div className="flex-1 min-w-0">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 px-4 sm:px-5 py-4">
+                    <div className="flex-1 min-w-0 w-full">
                       <div className="flex items-center flex-wrap gap-2 mb-0.5">
                         <p className="text-sm font-bold text-slate-800">
                           {rx.patient?.firstName} {rx.patient?.lastName}
                         </p>
                         <StatusBadge status={rx.status} />
                       </div>
-                      <p className="text-[11px] text-slate-500">
+                      <p className="text-[11px] text-slate-500 truncate">
                         Prescriber: <span className="font-semibold text-slate-700">{rx.prescriber?.name || "—"}</span>
-                        {rx.treatment && <span className="ml-2">· {rx.treatment}</span>}
+                        {rx.treatment && <span className="hidden sm:inline ml-2">· {rx.treatment}</span>}
                       </p>
                     </div>
-                    {rx.medications?.length > 0 && (
-                      <div className="shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 bg-blue-50 border border-blue-200 rounded-xl">
-                        <Pill size={12} className="text-blue-600" />
-                        <span className="text-[10px] font-bold text-blue-700">
-                          {rx.medications.length} med{rx.medications.length !== 1 ? "s" : ""}
-                        </span>
-                      </div>
-                    )}
-                    {rx.consentDocumentation && (
-                      <button onClick={() => window.open(rx.consentDocumentation, "_blank")}
-                        className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-700 border border-slate-200 rounded-xl text-[10px] font-bold hover:bg-slate-200 transition-colors">
-                        <Eye size={12} /> Consent
-                      </button>
-                    )}
-                    <div className="shrink-0 flex gap-2">
-                      {rx.status === "pending" && (
-                        <>
-                          <button onClick={() => handleRequestAction(rx._id, "approved")}
-                            className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-[10px] font-bold hover:bg-emerald-700 transition-colors">
-                            Approve
-                          </button>
-                          <button onClick={() => handleRequestAction(rx._id, "rejected")}
-                            className="px-3 py-1.5 border border-red-200 text-red-600 rounded-lg text-[10px] font-bold hover:bg-red-50 transition-colors">
-                            Reject
-                          </button>
-                        </>
+                    <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
+                      {rx.medications?.length > 0 && (
+                        <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-blue-50 border border-blue-200 rounded-xl">
+                          <Pill size={12} className="text-blue-600" />
+                          <span className="text-[10px] font-bold text-blue-700">
+                            {rx.medications.length} med{rx.medications.length !== 1 ? "s" : ""}
+                          </span>
+                        </div>
                       )}
-                      {rx.status !== "pending" && (
-                        <button onClick={() => handleRequestAction(rx._id, "deleted")}
-                          className="p-1.5 text-red-400 hover:bg-red-50 rounded-lg transition-colors">
-                          <Trash2 size={14} />
+                      {rx.consentDocumentation && (
+                        <button onClick={() => window.open(rx.consentDocumentation, "_blank")}
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-700 border border-slate-200 rounded-xl text-[10px] font-bold hover:bg-slate-200 transition-colors">
+                          <Eye size={12} /> <span className="hidden xs:inline">Consent</span>
                         </button>
                       )}
+                      <div className="flex gap-2">
+                        {rx.status === "pending" && (
+                          <>
+                            <button onClick={() => handleRequestAction(rx._id, "approved")}
+                              className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-[10px] font-bold hover:bg-emerald-700 transition-colors">
+                              Approve
+                            </button>
+                            <button onClick={() => handleRequestAction(rx._id, "rejected")}
+                              className="px-3 py-1.5 border border-red-200 text-red-600 rounded-lg text-[10px] font-bold hover:bg-red-50 transition-colors">
+                              Reject
+                            </button>
+                          </>
+                        )}
+                        {rx.status !== "pending" && (
+                          <button onClick={() => handleRequestAction(rx._id, "deleted")}
+                            className="p-1.5 text-red-400 hover:bg-red-50 rounded-lg transition-colors">
+                            <Trash2 size={14} />
+                          </button>
+                        )}
+                      </div>
+                      <button onClick={() => toggle(rx._id)} className="text-slate-400 hover:text-slate-600 transition-colors">
+                        {expandedId === rx._id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                      </button>
                     </div>
-                    <button onClick={() => toggle(rx._id)} className="text-slate-400 hover:text-slate-600 transition-colors shrink-0">
-                      {expandedId === rx._id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                    </button>
                   </div>
                   {expandedId === rx._id && (
-                    <div className="border-t border-slate-100 bg-slate-50/50 px-5 py-4 space-y-3">
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div className="border-t border-slate-100 bg-slate-50/50 px-4 sm:px-5 py-4 space-y-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                         <InfoCell label="Prescriber Email" value={rx.prescriber?.email} />
                         <InfoCell label="Treatment"        value={rx.treatment} />
                         <InfoCell label="Request ID"       value={`#${rx._id?.slice(-6).toUpperCase()}`} />
@@ -377,8 +382,8 @@ const Prescriptions = () => {
         {/* ── professional verification tab ───────────────────── */}
         {activeTab === "links" && (
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="px-5 py-3.5 border-b border-slate-100 flex items-center gap-2">
-              <div className="w-7 h-7 rounded-xl bg-slate-900 flex items-center justify-center">
+            <div className="px-4 sm:px-5 py-3.5 border-b border-slate-100 flex items-center gap-2">
+              <div className="w-7 h-7 rounded-xl bg-slate-900 flex items-center justify-center shrink-0">
                 <UserPlus size={14} className="text-white" />
               </div>
               <h2 className="text-sm font-bold text-slate-700">Professional Verification Queue</h2>
@@ -392,23 +397,23 @@ const Prescriptions = () => {
               <div className="divide-y divide-slate-100">
                 {links.map(link => (
                   <div key={link._id}>
-                    <div className="flex items-center gap-4 px-5 py-4 hover:bg-slate-50 transition-colors">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-0.5">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 px-4 sm:px-5 py-4 hover:bg-slate-50 transition-colors">
+                      <div className="flex-1 min-w-0 w-full">
+                        <div className="flex items-center gap-2 mb-0.5 flex-wrap">
                           <p className="text-sm font-semibold text-slate-800">
                             {link.requesterId?.name || `${link.requesterId?.firstName || ""} ${link.requesterId?.lastName || ""}`.trim() || "Unknown"}
                           </p>
                           <StatusBadge status={link.status} />
                         </div>
-                        <p className="text-[11px] text-slate-500">
+                        <p className="text-[11px] text-slate-500 truncate">
                           {link.requesterRole}
                           <span className="mx-1">·</span>
                           Reg: <span className="font-semibold text-slate-700">{link.registrationNumber}</span>
                         </p>
                       </div>
-                      <div className="shrink-0 flex gap-2">
+                      <div className="flex items-center gap-2 w-full sm:w-auto">
                         {link.status === "pending" && (
-                          <>
+                          <div className="flex gap-2">
                             <button onClick={() => handleLinkAction(link._id, "active")}
                               className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-[10px] font-bold hover:bg-emerald-700 transition-colors">
                               Verify
@@ -417,16 +422,16 @@ const Prescriptions = () => {
                               className="px-3 py-1.5 border border-red-200 text-red-600 rounded-lg text-[10px] font-bold hover:bg-red-50 transition-colors">
                               Reject
                             </button>
-                          </>
+                          </div>
                         )}
+                        <button onClick={() => toggle(link._id)} className="text-slate-400 hover:text-slate-600 transition-colors shrink-0">
+                          {expandedId === link._id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                        </button>
                       </div>
-                      <button onClick={() => toggle(link._id)} className="text-slate-400 hover:text-slate-600 transition-colors shrink-0">
-                        {expandedId === link._id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                      </button>
                     </div>
                     {expandedId === link._id && (
-                      <div className="border-t border-slate-100 bg-slate-50/50 px-5 py-4">
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      <div className="border-t border-slate-100 bg-slate-50/50 px-4 sm:px-5 py-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                           <InfoCell label="Email"           value={link.requesterId?.email} />
                           <InfoCell label="Registration No" value={link.registrationNumber} />
                           <InfoCell label="Message"         value={link.message || "No message"} />

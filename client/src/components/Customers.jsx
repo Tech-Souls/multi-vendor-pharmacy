@@ -2,6 +2,69 @@ import { useState, useEffect } from "react";
 import Header from "./Header";
 import API from "../api/axios";
 
+// ─── Mobile Customer Card ───
+const CustomerCard = ({ user, onApprove, onReject, onDelete }) => {
+  return (
+    <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow">
+      {/* Name & Email */}
+      <div className="mb-3">
+        <p className="text-sm font-bold text-black">{user.name}</p>
+        <p className="text-xs text-gray-500">{user.email}</p>
+      </div>
+
+      {/* Status badges */}
+      <div className="flex flex-wrap items-center gap-2 mb-3">
+        {user.isVerified ? (
+          <span className="text-[10px] bg-green-50 text-green-600 px-2.5 py-1 rounded-full font-medium">
+            ✓ verified
+          </span>
+        ) : (
+          <span className="text-[10px] bg-red-50 text-red-500 px-2.5 py-1 rounded-full font-medium">
+            ✗ unverified
+          </span>
+        )}
+        {user.isApproved ? (
+          <span className="text-[10px] bg-slate-100 text-black px-2.5 py-1 rounded-full font-medium">
+            ● approved
+          </span>
+        ) : (
+          <span className="text-[10px] bg-yellow-50 text-yellow-600 px-2.5 py-1 rounded-full font-medium">
+            ● pending
+          </span>
+        )}
+        <span className="text-[10px] text-gray-500">
+          Joined: {new Date(user.createdAt).toLocaleDateString()}
+        </span>
+      </div>
+
+      {/* Actions */}
+      <div className="flex items-center gap-2 pt-3 border-t border-slate-50">
+        {!user.isApproved ? (
+          <button
+            onClick={() => onApprove(user._id)}
+            className="flex-1 py-2 bg-black hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition shadow-sm"
+          >
+            Approve
+          </button>
+        ) : (
+          <button
+            onClick={() => onReject(user._id)}
+            className="flex-1 py-2 bg-slate-200 hover:bg-slate-300 text-black text-xs font-semibold rounded-xl transition shadow-sm"
+          >
+            Revoke
+          </button>
+        )}
+        <button
+          onClick={() => onDelete(user._id)}
+          className="px-4 py-2 bg-red-50 text-red-600 font-bold hover:bg-red-100 rounded-xl transition shadow-sm text-xs"
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  );
+};
+
 const Customers = () => {
   const [users, setUsers]     = useState([]);
   const [loading, setLoading] = useState(true);
@@ -44,7 +107,7 @@ const Customers = () => {
   return (
     <div className="bg-white min-h-screen text-black">
       <Header title="Customers Side" />
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
 
         {/* search */}
         <div className="mb-4">
@@ -57,8 +120,8 @@ const Customers = () => {
           />
         </div>
 
-        {/* table */}
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+        {/* ── Desktop Table View ── */}
+        <div className="hidden md:block bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
           {loading ? (
             <div className="p-8 text-center text-slate-400 text-sm">loading users...</div>
           ) : (
@@ -77,7 +140,7 @@ const Customers = () => {
                 {filtered.map((user) => (
                   <tr key={user._id} className="hover:bg-slate-50 transition">
                     <td className="px-5 py-3 font-semibold text-black">{user.name}</td>
-                    <td className="px-5 py-3 font-semibold text-black">{user.email}</td>
+                    <td className="px-5 py-3 text-black">{user.email}</td>
                     <td className="px-5 py-3">
                       {user.isVerified
                         ? <span className="text-xs bg-green-50 text-green-600 px-2 py-1 rounded-full font-medium">✓ verified</span>
@@ -121,6 +184,32 @@ const Customers = () => {
             </table>
           )}
         </div>
+
+        {/* ── Mobile Card View ── */}
+        <div className="md:hidden space-y-3">
+          {loading ? (
+            <div className="text-center py-8 text-slate-400 text-sm">loading users...</div>
+          ) : filtered.length === 0 ? (
+            <div className="text-center py-8 text-slate-400 text-sm">no users found</div>
+          ) : (
+            filtered.map((user) => (
+              <CustomerCard
+                key={user._id}
+                user={user}
+                onApprove={handleApprove}
+                onReject={handleReject}
+                onDelete={handleDelete}
+              />
+            ))
+          )}
+        </div>
+
+        {/* User count */}
+        {!loading && filtered.length > 0 && (
+          <div className="mt-4 text-xs text-gray-500">
+            Showing {filtered.length} of {users.length} users
+          </div>
+        )}
       </div>
     </div>
   );

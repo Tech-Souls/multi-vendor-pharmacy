@@ -3,7 +3,9 @@ import {
   BiPackage, 
   BiRefresh, 
   BiSearch, 
-  BiShow
+  BiShow,
+  BiChevronDown,
+  BiChevronUp
 } from 'react-icons/bi';
 import Header from './Header';
 import API from '../api/axios';
@@ -22,7 +24,6 @@ const STATUS_NEXT = {
   dispatched: 'delivered',
 };
 
-// High contrast action buttons
 const STATUS_ACTION = {
   pending:    { label: 'verify rx',    cls: 'bg-black text-white hover:bg-gray-800' },
   verified:   { label: 'dispense',     cls: 'bg-black text-white hover:bg-gray-800' },
@@ -54,7 +55,6 @@ const Orders = () => {
     try {
       const params = new URLSearchParams({ limit: LIMIT, page });
       if (statusFilter) params.append('status', statusFilter);
-      // Fetches standard order flow
       const { data } = await API.get(`/orders/admin/all?${params}`);
       setOrders(data.orders || []);
       setTotal(data.count || 0);
@@ -77,17 +77,103 @@ const Orders = () => {
     }
   };
 
+  // Mobile card view for orders
+  const OrderCard = ({ order }) => {
+    const nextStatus = STATUS_NEXT[order.status];
+    const action = STATUS_ACTION[order.status];
+    const isExp = expanded === order._id;
+
+    return (
+      <div className="bg-white border border-gray-200 rounded-xl p-4 mb-3 shadow-sm">
+        <div className="flex justify-between items-start mb-3">
+          <div>
+            <span className="font-mono text-[11px] font-bold text-gray-500">
+              #{order._id?.slice(-8).toUpperCase()}
+            </span>
+            <div className="flex flex-col mt-1">
+              <span className="font-bold text-black text-sm">
+                {order.customer?.firstName} {order.customer?.lastName}
+              </span>
+            </div>
+          </div>
+          <span className={`inline-flex items-center px-2.5 py-0.5 rounded border text-[9px] font-black ${STATUS_THEME[order.status]}`}>
+            {order.status}
+          </span>
+        </div>
+
+        <div className="flex justify-between items-center mb-3">
+          <span className="text-sm font-black text-black">{fmt(order.financials?.revenueExVat)}</span>
+          <div className="flex items-center gap-2">
+            {action && (
+              <button
+                onClick={() => handleStatusUpdate(order._id, nextStatus)}
+                className={`px-3 py-1.5 rounded text-[10px] font-black transition-all shadow-sm active:scale-95 border border-transparent ${action.cls}`}
+              >
+                {action.label}
+              </button>
+            )}
+            <button
+              onClick={() => setExpanded(isExp ? null : order._id)}
+              className={`p-1.5 rounded-lg transition-colors border ${isExp ? 'bg-black border-black text-white' : 'border-gray-200 text-gray-400 hover:border-black hover:text-black'}`}
+            >
+              {isExp ? <BiChevronUp size={18} /> : <BiChevronDown size={18} />}
+            </button>
+          </div>
+        </div>
+
+        {isExp && (
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <div className="space-y-3">
+              <h3 className="text-[12px] font-black text-black flex items-center gap-2">
+                <BiPackage size={14} className="text-black"/> Package manifest
+              </h3>
+              {order.items?.map((item, i) => (
+                <div key={i} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="w-7 h-7 bg-gray-200 rounded text-black flex items-center justify-center font-black text-[10px]">
+                      {item.quantity}x
+                    </div>
+                    <span className="text-xs font-bold text-gray-800">{item.productName}</span>
+                  </div>
+                  <span className="font-mono text-xs font-bold text-black">{fmt(item.unitRevenueExVat * item.quantity)}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-4 bg-gray-50 rounded-xl p-4">
+              <h3 className="text-[10px] font-black text-gray-500 mb-3">Financial balance</h3>
+              <div className="space-y-2 mb-3">
+                <div className="flex justify-between text-xs font-bold">
+                  <span className="text-gray-500">Tax (VAT)</span>
+                  <span className="text-black font-bold">{fmt(order.financials?.outputVat)}</span>
+                </div>
+                <div className="flex justify-between text-xs font-bold">
+                  <span className="text-gray-500">Shipping</span>
+                  <span className="text-black">£0.00</span>
+                </div>
+              </div>
+              <div className="pt-3 border-t border-dashed border-gray-200">
+                <p className="text-[9px] text-gray-500 font-black mb-1">Net commission</p>
+                <p className="text-xl font-black text-black">{fmt(order.financials?.commissionExVat)}</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="bg-white min-h-screen font-sans antialiased text-black">
       <Header title="order side" />
       
       <div className="max-w-[1600px] mx-auto p-4 lg:p-8">
         
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-6">
-          <div>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 md:mb-8 gap-4 md:gap-6">
+          <div className="w-full md:w-auto">
             <div className="flex items-center gap-3 mb-1">
-               <div className="w-1.5 h-7 bg-black rounded-full" />
-               <h1 className="text-2xl font-black tracking-tight text-black">orders explorer</h1>
+              <div className="w-1.5 h-7 bg-black rounded-full" />
+              <h1 className="text-xl md:text-2xl font-black tracking-tight text-black">orders explorer</h1>
             </div>
             <p className="text-[11px] font-bold text-gray-500 ml-4">
               pipeline capacity: <span className="text-black">{total} active units</span>
@@ -96,9 +182,10 @@ const Orders = () => {
 
           <button
             onClick={fetchOrders}
-            className="p-2.5 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-50 transition-all active:scale-95 group"
+            className="p-2.5 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-50 transition-all active:scale-95 group w-full md:w-auto flex items-center justify-center"
           >
             <BiRefresh size={20} className={`${loading ? 'animate-spin' : ''} text-black group-hover:rotate-180 transition-transform`} />
+            <span className="ml-2 md:hidden text-xs font-bold">Refresh</span>
           </button>
         </div>
 
@@ -117,7 +204,7 @@ const Orders = () => {
           <select
             value={statusFilter}
             onChange={e => { setStatus(e.target.value); setPage(1); }}
-            className="bg-white border border-gray-200 rounded-lg px-6 py-2 text-xs font-bold text-black outline-none cursor-pointer hover:bg-gray-50"
+            className="bg-white border border-gray-200 rounded-lg px-4 md:px-6 py-2.5 text-xs font-bold text-black outline-none cursor-pointer hover:bg-gray-50"
           >
             <option value="">all transactions</option>
             {['pending', 'verified', 'dispensing', 'dispatched', 'delivered'].map(s => (
@@ -126,7 +213,8 @@ const Orders = () => {
           </select>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+        {/* Desktop Table View - Hidden on mobile */}
+        <div className="hidden md:block bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
           <table className="w-full border-collapse">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-100 text-[12px] font-black text-gray-600">
@@ -200,7 +288,7 @@ const Orders = () => {
                               ))}
                             </div>
 
-                            <div className="bg-white border border-gray-200 rounded-xl p-6 ">
+                            <div className="bg-white border border-gray-200 rounded-xl p-6">
                                <h3 className="text-[10px] font-black text-gray-500 mb-6">financial balance</h3>
                                <div className="space-y-3 mb-6">
                                   <div className="flex justify-between text-xs font-bold">
@@ -227,6 +315,40 @@ const Orders = () => {
             </tbody>
           </table>
         </div>
+
+        {/* Mobile Card View - Visible only on mobile */}
+        <div className="md:hidden">
+          {loading ? (
+            <div className="text-center py-24 text-[10px] font-bold text-gray-400">syncing records...</div>
+          ) : orders.length === 0 ? (
+            <div className="text-center py-24 text-[10px] font-bold text-gray-400">no orders found</div>
+          ) : (
+            orders.map(order => <OrderCard key={order._id} order={order} />)
+          )}
+        </div>
+
+        {/* Pagination - Add if needed */}
+        {!loading && orders.length > 0 && (
+          <div className="mt-6 flex justify-between items-center text-xs font-bold text-gray-500">
+            <span>Showing {orders.length} of {total} orders</span>
+            <div className="flex gap-2">
+              <button 
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="px-4 py-2 border border-gray-200 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+              >
+                Previous
+              </button>
+              <button 
+                onClick={() => setPage(p => p + 1)}
+                disabled={orders.length < LIMIT}
+                className="px-4 py-2 border border-gray-200 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
