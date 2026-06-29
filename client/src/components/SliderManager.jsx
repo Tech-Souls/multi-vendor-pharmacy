@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Trash2, PlusCircle, Link, Image as ImageIcon, FileText, Type, Upload } from "lucide-react";
 import Header from "./Header";
+import { toast } from "react-hot-toast";
+
 
 const SliderManager = () => {
   // Form input field state management (Removed imageUrl string state)
@@ -111,25 +113,54 @@ const SliderManager = () => {
     }
   };
 
-  // Permanently drop a canvas record row entry point
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to permanently delete this slider entry?")) return;
+// Permanently drop a canvas record row entry point
+const handleDelete = (id) => {
+  // Show confirmation toast
+  toast(
+    (t) => (
+      <div className="flex flex-col gap-2">
+        <p className="text-sm font-medium">Delete this slide permanently?</p>
+        <div className="flex gap-2">
+          <button
+            onClick={() => {
+              toast.dismiss(t.id);
+              confirmDelete(id);
+            }}
+            className="bg-red-500 text-white text-xs px-3 py-1 rounded"
+          >
+            Yes, delete
+          </button>
+          <button
+            onClick={() => toast.dismiss(t.id)}
+            className="bg-gray-200 text-xs px-3 py-1 rounded"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    ),
+    { duration: Infinity } // Won't auto-dismiss
+  );
+};
 
-    try {
-      const res = await fetch(`${API_URL}/${id}`, {
-        method: "DELETE",
-      });
+const confirmDelete = async (id) => {
+  const toastId = toast.loading("Deleting slide...");
 
-      if (res.ok) {
-        setSliders(sliders.filter((slide) => slide._id !== id));
-      } else {
-        const data = await res.json();
-        alert(data.message || "Unable to clear slide trace.");
-      }
-    } catch (err) {
-      console.error("Error executing slide removal lifecycle handler:", err);
+  try {
+    const res = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+
+    if (res.ok) {
+      setSliders(sliders.filter((slide) => slide._id !== id));
+      toast.success("Slide deleted.", { id: toastId });
+    } else {
+      const data = await res.json();
+      toast.error(data.message || "Failed to delete slide.", { id: toastId });
     }
-  };
+  } catch (err) {
+    console.error("Delete error:", err);
+    toast.error("Something went wrong.", { id: toastId });
+  }
+};
 
   return (
     <div className="min-h-screen bg-white text-slate-800">

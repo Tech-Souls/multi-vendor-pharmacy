@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Header from "./Header";
 import API from "../api/axios";
+import toast from 'react-hot-toast';
 
 // ─── Mobile Customer Card ───
 const CustomerCard = ({ user, onApprove, onReject, onDelete }) => {
@@ -66,9 +67,9 @@ const CustomerCard = ({ user, onApprove, onReject, onDelete }) => {
 };
 
 const Customers = () => {
-  const [users, setUsers]     = useState([]);
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch]   = useState("");
+  const [search, setSearch] = useState("");
 
   const fetchUsers = async () => {
     try {
@@ -93,10 +94,49 @@ const Customers = () => {
     fetchUsers();
   };
 
+
+
   const handleDelete = async (id) => {
-    if (!confirm("delete this user?")) return;
-    await API.delete(`/users/${id}`);
-    fetchUsers();
+    const confirmed = await new Promise((resolve) => {
+      toast(
+        (t) => (
+          <div className="flex items-center justify-between gap-6 px-4 py-3 bg-white rounded-2xl shadow-lg min-w-[360px]">
+            <div>
+              <p className="text-sm font-bold text-gray-800">Delete User?</p>
+              <p className="text-xs text-gray-400 mt-0.5">Cannot undo</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => { toast.dismiss(t.id); resolve(true); }}
+                className="px-4 py-1.5 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-lg transition-colors duration-200"
+              >
+                Delete
+              </button>
+              <button
+                onClick={() => { toast.dismiss(t.id); resolve(false); }}
+                className="px-4 py-1.5 border border-gray-200 hover:bg-gray-50 text-gray-700 text-sm font-medium rounded-lg transition-colors duration-200"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        ),
+        {
+          duration: Infinity,
+          position: "top-center",
+          style: { background: "transparent", boxShadow: "none", padding: 0 },
+        }
+      );
+    });
+
+    if (!confirmed) return;
+    try {
+      await API.delete(`/users/${id}`);
+      fetchUsers();
+      toast.success("User deleted");
+    } catch {
+      toast.error("Failed to delete");
+    }
   };
 
   const filtered = users.filter(u =>

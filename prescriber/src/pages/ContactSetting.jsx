@@ -8,9 +8,9 @@ const EMPTY = { number: '', timings: '', address: '', clinicEmail: '' };
 
 const ContactSetting = () => {
   const [clinicData, setClinicData] = useState(EMPTY);  // ✅ always empty on mount
-  const [messages,   setMessages]   = useState([]);
-  const [saving,     setSaving]     = useState(false);
-  const [loading,    setLoading]    = useState(true);
+  const [messages, setMessages] = useState([]);
+  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // ✅ Only fetch messages — never pre-fill clinic form
   useEffect(() => {
@@ -41,13 +41,45 @@ const ContactSetting = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Delete this message?')) return;
+    const confirmed = await new Promise((resolve) => {
+      toast(
+        (t) => (
+          <div className="flex items-center justify-between gap-6 px-4 py-3 bg-white rounded-2xl shadow-lg min-w-[360px]">
+            <div>
+              <p className="text-sm font-bold text-gray-800">Delete Message?</p>
+              <p className="text-xs text-gray-400 mt-0.5">Cannot undo</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => { toast.dismiss(t.id); resolve(true); }}
+                className="px-4 py-1.5 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-lg transition-colors duration-200"
+              >
+                Delete
+              </button>
+              <button
+                onClick={() => { toast.dismiss(t.id); resolve(false); }}
+                className="px-4 py-1.5 border border-gray-200 hover:bg-gray-50 text-gray-700 text-sm font-medium rounded-lg transition-colors duration-200"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        ),
+        {
+          duration: Infinity,
+          position: "top-center",
+          style: { background: "transparent", boxShadow: "none", padding: 0 },
+        }
+      );
+    });
+
+    if (!confirmed) return;
     try {
       await API.delete(`/contact/${id}`);
       setMessages(prev => prev.filter(m => m._id !== id));
-      toast.success('Message deleted.');
+      toast.success("Message deleted.");
     } catch (err) {
-      toast.error('Failed to delete.');
+      toast.error("Failed to delete.");
     }
   };
 
@@ -58,10 +90,10 @@ const ContactSetting = () => {
   );
 
   const clinicFields = [
-    { label: 'Phone Number',  key: 'number',      icon: Phone,  type: 'input'    },
-    { label: 'Clinic Email',  key: 'clinicEmail', icon: Mail,   type: 'input'    },
-    { label: 'Opening Hours', key: 'timings',     icon: Clock,  type: 'textarea' },
-    { label: 'Address',       key: 'address',     icon: MapPin, type: 'textarea' },
+    { label: 'Phone Number', key: 'number', icon: Phone, type: 'input' },
+    { label: 'Clinic Email', key: 'clinicEmail', icon: Mail, type: 'input' },
+    { label: 'Opening Hours', key: 'timings', icon: Clock, type: 'textarea' },
+    { label: 'Address', key: 'address', icon: MapPin, type: 'textarea' },
   ];
 
   return (

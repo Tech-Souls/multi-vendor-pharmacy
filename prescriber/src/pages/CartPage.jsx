@@ -39,7 +39,7 @@ const CartPage = () => {
       setPrescribers(links);
       if (links.length === 1) {
         // Use the actual ID field (handling nested structure)
-        const id = links[0].prescriberId?._id || links[0].prescriberId?.prescriberId || links[0].prescriberId;
+       const id = links[0].prescriberId?.prescriberId || '';
         setPrescriberId(id);
       }
     } catch (err) {
@@ -211,7 +211,7 @@ const CartPage = () => {
                     className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-black transition-colors bg-white text-black">
                     <option value="">Select a prescriber</option>
                     {prescribers.map((p, idx) => {
-                      const id = p.prescriberId?._id || p.prescriberId?.prescriberId || p.prescriberId;
+                      const id = p.prescriberId?.prescriberId || '';
                       const name = p.prescriberId?.name || `${p.prescriberId?.firstName || ''} ${p.prescriberId?.lastName || ''}`.trim();
                       return (
                         <option key={idx} value={id}>

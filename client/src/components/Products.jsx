@@ -8,18 +8,18 @@ import { useNavigate } from "react-router-dom";
 
 const SUBCATEGORIES = {
   Injectables: ["Toxins", "HA Fillers", "Skin Boosters", "Polynucleotides"],
-  Skincare:    ["Skincare", "Hair", "Make Up"],
+  Skincare: ["Skincare", "Hair", "Make Up"],
 };
 
 // ─── Helper: Build image URL ───
 const buildImageUrl = (imagePath) => {
   if (!imagePath) return null;
-  
+
   try {
     let cleanPath = imagePath.replace(/\\/g, '/');
     cleanPath = cleanPath.replace(/^\//, '');
     const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:4000').replace(/\/$/, '');
-    
+
     if (cleanPath.startsWith('http://') || cleanPath.startsWith('https://')) {
       return cleanPath;
     }
@@ -67,7 +67,7 @@ const ProductImage = ({ src, alt, className }) => {
 // ─── Mobile Product Card ───
 const ProductCard = ({ product, onEdit, onDelete, onAddToCart, addingToCart }) => {
   const imageUrl = buildImageUrl(product.image);
-  
+
   return (
     <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow">
       {/* Top row: Image + Name + Status */}
@@ -111,11 +111,10 @@ const ProductCard = ({ product, onEdit, onDelete, onAddToCart, addingToCart }) =
           )}
         </div>
         <div className="flex items-center gap-2">
-          <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${
-            product.stock > 5  ? 'bg-green-50 text-green-600' :
-            product.stock > 0  ? 'bg-amber-50 text-amber-600'  :
-                                  'bg-red-50 text-red-500'
-          }`}>
+          <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${product.stock > 5 ? 'bg-green-50 text-green-600' :
+              product.stock > 0 ? 'bg-amber-50 text-amber-600' :
+                'bg-red-50 text-red-500'
+            }`}>
             {product.stock > 0 ? `${product.stock}` : '0'}
           </span>
           {product.prescriptionRequired ? (
@@ -135,13 +134,12 @@ const ProductCard = ({ product, onEdit, onDelete, onAddToCart, addingToCart }) =
         <button
           onClick={() => onAddToCart(product)}
           disabled={addingToCart === product._id}
-          className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${
-            product.prescriptionRequired
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              : addingToCart === product._id
+          className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${product.prescriptionRequired
+            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+            : addingToCart === product._id
               ? 'bg-gray-100 text-gray-400'
               : 'bg-black text-white hover:bg-gray-800'
-          }`}
+            }`}
         >
           {addingToCart === product._id ? (
             <div className="w-4 h-4 border-2 border-gray-300 border-t-transparent rounded-full animate-spin mx-auto" />
@@ -170,37 +168,37 @@ const ProductCard = ({ product, onEdit, onDelete, onAddToCart, addingToCart }) =
 
 const Products = () => {
   const { addToCart } = useCart();
-  const navigate      = useNavigate();
+  const navigate = useNavigate();
 
-  const [products,    setProducts]    = useState([]);
-  const [loading,     setLoading]     = useState(true);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedId,  setSelectedId]  = useState(null);
-  const [addingToCart,setAddingToCart]= useState(null);
-  const [selectedCategory,    setSelectedCategory]    = useState("all");
+  const [selectedId, setSelectedId] = useState(null);
+  const [addingToCart, setAddingToCart] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedSubCategory, setSelectedSubCategory] = useState("all");
-  const [imageFile,            setImageFile]           = useState(null);
-  const [previewUrl,           setPreviewUrl]          = useState(null);
-  const [additionalImages,     setAdditionalImages]    = useState([]);
-  const [additionalPreviews,   setAdditionalPreviews]  = useState([]);
+  const [imageFile, setImageFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [additionalImages, setAdditionalImages] = useState([]);
+  const [additionalPreviews, setAdditionalPreviews] = useState([]);
 
   const categories = [
-    "Botulinum Toxins","Dermal Fillers","Skin Boosters",
-    "Fat Dissolvers","Mesotherapy","Anesthetics",
-    "Skincare","Consumables","Injectables",
+    "Botulinum Toxins", "Dermal Fillers", "Skin Boosters",
+    "Fat Dissolvers", "Mesotherapy", "Anesthetics",
+    "Skincare", "Consumables", "Injectables",
   ];
 
   const [formData, setFormData] = useState({
-    name:"", brand:"", category:"Botulinum Toxins", subCategory:"",
-    description:"", howToUse:"", safetyInfo:"",
-    prescriptionRequired: false, unitPrice:"", dispensedBy:"",
-    dosage:"", buyingPrice:"", sellingPrice:"", stock:"",
-    expiryDate:"", sku:"", supplier:""
+    name: "", brand: "", category: "Botulinum Toxins", subCategory: "",
+    description: "", howToUse: "", safetyInfo: "",
+    prescriptionRequired: false, unitPrice: "", dispensedBy: "",
+    dosage: "", buyingPrice: "", sellingPrice: "", stock: "",
+    expiryDate: "", sku: "", supplier: ""
   });
 
   const fetchProducts = async () => {
     try {
-      const res  = await API.get("/medicines");
+      const res = await API.get("/medicines");
       const data = Array.isArray(res.data) ? res.data : (res.data.medicines || []);
       setProducts(data);
     } catch (err) {
@@ -221,7 +219,7 @@ const Products = () => {
   const filteredProducts = products.filter(p => {
     const matchCat = selectedCategory === "all" ||
       p.category.toLowerCase() === selectedCategory.toLowerCase();
-    const subKey   = getSubcategoryKey(selectedCategory);
+    const subKey = getSubcategoryKey(selectedCategory);
     const matchSub = !subKey || selectedSubCategory === "all" ||
       (p.subCategory && p.subCategory.toLowerCase() === selectedSubCategory.toLowerCase());
     return matchCat && matchSub;
@@ -249,23 +247,23 @@ const Products = () => {
   const handleEdit = (product) => {
     setSelectedId(product._id);
     setFormData({
-      name:                product.name                || "",
-      brand:               product.brand               || "",
-      category:            product.category            || "Botulinum Toxins",
-      subCategory:         product.subCategory         || "",
-      description:         product.description         || "",
-      howToUse:            product.howToUse            || "",
-      safetyInfo:          product.safetyInfo          || "",
-      prescriptionRequired:product.prescriptionRequired|| false,
-      unitPrice:           product.unitPrice           || product.sellingPrice || "",
-      dispensedBy:         product.dispensedBy         || "",
-      dosage:              product.dosage              || "",
-      buyingPrice:         product.buyingPrice         || "",
-      sellingPrice:        product.sellingPrice        || product.price || "",
-      stock:               product.stock               || "",
-      expiryDate:          product.expiryDate          ? product.expiryDate.split('T')[0] : "",
-      sku:                 product.sku                 || "",
-      supplier:            product.supplier            || "",
+      name: product.name || "",
+      brand: product.brand || "",
+      category: product.category || "Botulinum Toxins",
+      subCategory: product.subCategory || "",
+      description: product.description || "",
+      howToUse: product.howToUse || "",
+      safetyInfo: product.safetyInfo || "",
+      prescriptionRequired: product.prescriptionRequired || false,
+      unitPrice: product.unitPrice || product.sellingPrice || "",
+      dispensedBy: product.dispensedBy || "",
+      dosage: product.dosage || "",
+      buyingPrice: product.buyingPrice || "",
+      sellingPrice: product.sellingPrice || product.price || "",
+      stock: product.stock || "",
+      expiryDate: product.expiryDate ? product.expiryDate.split('T')[0] : "",
+      sku: product.sku || "",
+      supplier: product.supplier || "",
     });
     if (product.image) {
       const url = buildImageUrl(product.image);
@@ -280,8 +278,37 @@ const Products = () => {
     setIsModalOpen(true);
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Remove this product?")) return;
+  const handleDelete = (id) => {
+    // Show confirmation toast
+    toast(
+      (t) => (
+        <div className="flex flex-col gap-2">
+          <p className="text-sm font-medium">Remove this product permanently?</p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                toast.dismiss(t.id);
+                performDelete(id);
+              }}
+              className="bg-red-500 text-white text-xs px-3 py-1 rounded"
+            >
+              Yes, delete
+            </button>
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="bg-gray-200 text-xs px-3 py-1 rounded"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ),
+      { duration: Infinity } // Won't auto-dismiss
+    );
+  };
+
+  // helper for handle delete
+  const performDelete = async (id) => {
     try {
       await API.delete(`/medicines/${id}`);
       setProducts(products.filter(p => p._id !== id));
@@ -302,16 +329,16 @@ const Products = () => {
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    if (file) { 
-      setImageFile(file); 
-      setPreviewUrl(URL.createObjectURL(file)); 
+    if (file) {
+      setImageFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
     }
   };
 
   const handleAdditionalFiles = (e) => {
     const files = Array.from(e.target.files);
     if (additionalPreviews.length + files.length > 3) {
-      toast.error("Max 3 additional images"); 
+      toast.error("Max 3 additional images");
       return;
     }
     setAdditionalImages(prev => [...prev, ...files]);
@@ -320,12 +347,12 @@ const Products = () => {
 
   const removeAdditionalImage = (index) => {
     setAdditionalPreviews(prev => prev.filter((_, i) => i !== index));
-    setAdditionalImages(prev  => prev.filter((_, i) => i !== index));
+    setAdditionalImages(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const data   = new FormData();
+    const data = new FormData();
     const subKey = getSubcategoryKey(formData.category);
     Object.keys(formData).forEach(key => {
       if (key === "subCategory") {
@@ -334,19 +361,19 @@ const Products = () => {
         data.append(key, formData[key]);
       }
     });
-    data.set("buyingPrice",  Number(formData.buyingPrice));
+    data.set("buyingPrice", Number(formData.buyingPrice));
     data.set("sellingPrice", Number(formData.sellingPrice));
-    data.set("price",        Number(formData.sellingPrice));
-    data.set("unitPrice",    Number(formData.unitPrice));
-    data.set("stock",        Number(formData.stock));
+    data.set("price", Number(formData.sellingPrice));
+    data.set("unitPrice", Number(formData.unitPrice));
+    data.set("stock", Number(formData.stock));
     if (imageFile) data.append("image", imageFile);
     additionalImages.forEach(file => data.append("additionalImages", file));
 
     try {
-      const token  = localStorage.getItem("token");
+      const token = localStorage.getItem("token");
       const config = { headers: { "content-type": "multipart/form-data", authorization: `bearer ${token}` } };
       if (selectedId) {
-        const res     = await API.put(`/medicines/${selectedId}`, data, config);
+        const res = await API.put(`/medicines/${selectedId}`, data, config);
         const updated = res.data.medicine || res.data;
         setProducts(products.map(p => p._id === selectedId ? updated : p));
         toast.success("Product updated");
@@ -363,13 +390,13 @@ const Products = () => {
 
   const closeModal = () => {
     setIsModalOpen(false); setSelectedId(null);
-    setImageFile(null);    setPreviewUrl(null);
+    setImageFile(null); setPreviewUrl(null);
     setAdditionalImages([]); setAdditionalPreviews([]);
     setFormData({
-      name:"", brand:"", category:"Botulinum Toxins", subCategory:"",
-      description:"", howToUse:"", safetyInfo:"", prescriptionRequired: false,
-      unitPrice:"", dispensedBy:"", dosage:"", buyingPrice:"",
-      sellingPrice:"", stock:"", expiryDate:"", sku:"", supplier:""
+      name: "", brand: "", category: "Botulinum Toxins", subCategory: "",
+      description: "", howToUse: "", safetyInfo: "", prescriptionRequired: false,
+      unitPrice: "", dispensedBy: "", dosage: "", buyingPrice: "",
+      sellingPrice: "", stock: "", expiryDate: "", sku: "", supplier: ""
     });
   };
 
@@ -379,8 +406,8 @@ const Products = () => {
   };
 
   const activeSubcategoryKey = getSubcategoryKey(selectedCategory);
-  const activeSubcategories  = activeSubcategoryKey ? SUBCATEGORIES[activeSubcategoryKey] : [];
-  const formSubcategoryKey   = getSubcategoryKey(formData.category);
+  const activeSubcategories = activeSubcategoryKey ? SUBCATEGORIES[activeSubcategoryKey] : [];
+  const formSubcategoryKey = getSubcategoryKey(formData.category);
 
   return (
     <div className="bg-white min-h-screen text-black">
@@ -403,21 +430,19 @@ const Products = () => {
         <div className="flex gap-2 overflow-x-auto pb-2 mb-2 no-scrollbar">
           <button
             onClick={() => { setSelectedCategory("all"); setSelectedSubCategory("all"); }}
-            className={`px-3 sm:px-4 py-2 rounded-xl text-[10px] sm:text-xs font-semibold whitespace-nowrap transition-all ${
-              selectedCategory === "all"
-                ? 'bg-black text-white'
-                : 'bg-white text-gray-500 border border-gray-200 hover:border-gray-400'
-            }`}>
+            className={`px-3 sm:px-4 py-2 rounded-xl text-[10px] sm:text-xs font-semibold whitespace-nowrap transition-all ${selectedCategory === "all"
+              ? 'bg-black text-white'
+              : 'bg-white text-gray-500 border border-gray-200 hover:border-gray-400'
+              }`}>
             All
           </button>
           {categories.map(cat => (
             <button key={cat}
               onClick={() => { setSelectedCategory(cat); setSelectedSubCategory("all"); }}
-              className={`px-3 sm:px-4 py-2 rounded-xl text-[10px] sm:text-xs font-semibold whitespace-nowrap transition-all ${
-                selectedCategory === cat
-                  ? 'bg-black text-white'
-                  : 'bg-white text-gray-500 border border-gray-200 hover:border-gray-400'
-              }`}>
+              className={`px-3 sm:px-4 py-2 rounded-xl text-[10px] sm:text-xs font-semibold whitespace-nowrap transition-all ${selectedCategory === cat
+                ? 'bg-black text-white'
+                : 'bg-white text-gray-500 border border-gray-200 hover:border-gray-400'
+                }`}>
               {cat}
             </button>
           ))}
@@ -428,21 +453,19 @@ const Products = () => {
           <div className="flex gap-2 overflow-x-auto pb-4 mb-4 no-scrollbar">
             <button
               onClick={() => setSelectedSubCategory("all")}
-              className={`px-3 sm:px-4 py-1.5 rounded-xl text-[10px] sm:text-xs font-semibold whitespace-nowrap transition-all ${
-                selectedSubCategory === "all"
-                  ? 'bg-gray-800 text-white'
-                  : 'bg-gray-50 text-gray-500 border border-gray-200 hover:bg-gray-100'
-              }`}>
+              className={`px-3 sm:px-4 py-1.5 rounded-xl text-[10px] sm:text-xs font-semibold whitespace-nowrap transition-all ${selectedSubCategory === "all"
+                ? 'bg-gray-800 text-white'
+                : 'bg-gray-50 text-gray-500 border border-gray-200 hover:bg-gray-100'
+                }`}>
               All {selectedCategory}
             </button>
             {activeSubcategories.map(sub => (
               <button key={sub}
                 onClick={() => setSelectedSubCategory(sub)}
-                className={`px-3 sm:px-4 py-1.5 rounded-xl text-[10px] sm:text-xs font-semibold whitespace-nowrap transition-all ${
-                  selectedSubCategory === sub
-                    ? 'bg-gray-800 text-white'
-                    : 'bg-gray-50 text-gray-500 border border-gray-200 hover:bg-gray-100'
-                }`}>
+                className={`px-3 sm:px-4 py-1.5 rounded-xl text-[10px] sm:text-xs font-semibold whitespace-nowrap transition-all ${selectedSubCategory === sub
+                  ? 'bg-gray-800 text-white'
+                  : 'bg-gray-50 text-gray-500 border border-gray-200 hover:bg-gray-100'
+                  }`}>
                 {sub}
               </button>
             ))}
@@ -481,113 +504,112 @@ const Products = () => {
                 </tr>
               ) : filteredProducts.map(item => {
                 const imageUrl = buildImageUrl(item.image);
-                
+
                 return (
-                <tr key={item._id} className="hover:bg-gray-50/60 transition-all">
+                  <tr key={item._id} className="hover:bg-gray-50/60 transition-all">
 
-                  <td className="py-4 px-6">
-                    <div className="flex items-center gap-3">
-                      <div className="w-11 h-11 bg-gray-50 rounded-xl overflow-hidden border border-gray-100 shrink-0">
-                        {imageUrl ? (
-                          <ProductImage src={imageUrl} alt={item.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <Package size={16} className="text-gray-200" />
-                          </div>
+                    <td className="py-4 px-6">
+                      <div className="flex items-center gap-3">
+                        <div className="w-11 h-11 bg-gray-50 rounded-xl overflow-hidden border border-gray-100 shrink-0">
+                          {imageUrl ? (
+                            <ProductImage src={imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <Package size={16} className="text-gray-200" />
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-black">{item.name}</p>
+                          <p className="text-[10px] text-gray-300 font-mono">{item.sku || '—'}</p>
+                          {item.brand && (
+                            <p className="text-[10px] text-gray-300">{item.brand}</p>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+
+                    <td className="py-4 px-6">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[10px] font-semibold bg-gray-100 text-gray-600 px-2 py-0.5 rounded-lg w-fit">
+                          {item.category}
+                        </span>
+                        {item.subCategory && (
+                          <span className="text-[10px] font-semibold bg-gray-50 text-gray-400 border border-gray-100 px-2 py-0.5 rounded-lg w-fit">
+                            {item.subCategory}
+                          </span>
                         )}
                       </div>
-                      <div>
-                        <p className="text-sm font-semibold text-black">{item.name}</p>
-                        <p className="text-[10px] text-gray-300 font-mono">{item.sku || '—'}</p>
-                        {item.brand && (
-                          <p className="text-[10px] text-gray-300">{item.brand}</p>
-                        )}
-                      </div>
-                    </div>
-                  </td>
+                    </td>
 
-                  <td className="py-4 px-6">
-                    <div className="flex flex-col gap-1">
-                      <span className="text-[10px] font-semibold bg-gray-100 text-gray-600 px-2 py-0.5 rounded-lg w-fit">
-                        {item.category}
+                    <td className="py-4 px-6">
+                      <p className="text-sm font-bold text-black">
+                        £{(item.sellingPrice || item.price || 0).toFixed ? (item.sellingPrice || item.price || 0).toFixed(2) : (item.sellingPrice || item.price || 0)}
+                      </p>
+                      {item.unitPrice && (
+                        <p className="text-[10px] text-gray-400">unit: £{item.unitPrice}</p>
+                      )}
+                      <p className="text-[10px] text-gray-300">cost: £{item.buyingPrice || 0}</p>
+                      {item.buyingPrice && item.sellingPrice && (
+                        <p className="text-[10px] text-green-500 font-semibold">
+                          {(((item.sellingPrice - item.buyingPrice) / item.sellingPrice) * 100).toFixed(0)}% margin
+                        </p>
+                      )}
+                    </td>
+
+                    <td className="py-4 px-6">
+                      <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${item.stock > 5 ? 'bg-green-50 text-green-600' :
+                        item.stock > 0 ? 'bg-amber-50 text-amber-600' :
+                          'bg-red-50 text-red-500'
+                        }`}>
+                        {item.stock > 0 ? `${item.stock} units` : 'Out of stock'}
                       </span>
-                      {item.subCategory && (
-                        <span className="text-[10px] font-semibold bg-gray-50 text-gray-400 border border-gray-100 px-2 py-0.5 rounded-lg w-fit">
-                          {item.subCategory}
+                    </td>
+
+                    <td className="py-4 px-6">
+                      {item.prescriptionRequired ? (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-red-400 bg-red-50 px-2 py-1 rounded-full">
+                          <FileText size={9} /> Rx
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-bold text-green-500 bg-green-50 px-2 py-1 rounded-full block w-fit">
+                          OTC
                         </span>
                       )}
-                    </div>
-                  </td>
+                    </td>
 
-                  <td className="py-4 px-6">
-                    <p className="text-sm font-bold text-black">
-                      £{(item.sellingPrice || item.price || 0).toFixed ? (item.sellingPrice || item.price || 0).toFixed(2) : (item.sellingPrice || item.price || 0)}
-                    </p>
-                    {item.unitPrice && (
-                      <p className="text-[10px] text-gray-400">unit: £{item.unitPrice}</p>
-                    )}
-                    <p className="text-[10px] text-gray-300">cost: £{item.buyingPrice || 0}</p>
-                    {item.buyingPrice && item.sellingPrice && (
-                      <p className="text-[10px] text-green-500 font-semibold">
-                        {(((item.sellingPrice - item.buyingPrice) / item.sellingPrice) * 100).toFixed(0)}% margin
-                      </p>
-                    )}
-                  </td>
-
-                  <td className="py-4 px-6">
-                    <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${
-                      item.stock > 5  ? 'bg-green-50 text-green-600' :
-                      item.stock > 0  ? 'bg-amber-50 text-amber-600'  :
-                                        'bg-red-50 text-red-500'
-                    }`}>
-                      {item.stock > 0 ? `${item.stock} units` : 'Out of stock'}
-                    </span>
-                  </td>
-
-                  <td className="py-4 px-6">
-                    {item.prescriptionRequired ? (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-red-400 bg-red-50 px-2 py-1 rounded-full">
-                        <FileText size={9} /> Rx
-                      </span>
-                    ) : (
-                      <span className="text-[10px] font-bold text-green-500 bg-green-50 px-2 py-1 rounded-full block w-fit">
-                        OTC
-                      </span>
-                    )}
-                  </td>
-
-                  <td className="py-4 px-6 text-right">
-                    <div className="flex justify-end gap-1.5">
-                      <button
-                        onClick={() => handleAddToCart(item)}
-                        disabled={addingToCart === item._id}
-                        className={`p-2 rounded-lg transition-all ${
-                          item.prescriptionRequired
+                    <td className="py-4 px-6 text-right">
+                      <div className="flex justify-end gap-1.5">
+                        <button
+                          onClick={() => handleAddToCart(item)}
+                          disabled={addingToCart === item._id}
+                          className={`p-2 rounded-lg transition-all ${item.prescriptionRequired
                             ? 'text-red-300 hover:text-red-500 hover:bg-red-50'
                             : addingToCart === item._id
-                            ? 'text-gray-200 cursor-not-allowed'
-                            : 'text-green-500 hover:bg-green-50'
-                        }`}>
-                        {addingToCart === item._id
-                          ? <div className="w-3.5 h-3.5 border border-gray-300 border-t-transparent rounded-full animate-spin" />
-                          : item.prescriptionRequired
-                          ? <FileText size={15} />
-                          : <ShoppingCart size={15} />}
-                      </button>
-                      <button
-                        onClick={() => handleEdit(item)}
-                        className="p-2 text-gray-400 hover:text-black hover:bg-gray-50 rounded-lg transition-all">
-                        <Edit size={15} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(item._id)}
-                        className="p-2 text-gray-200 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all">
-                        <Trash2 size={15} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              )})}
+                              ? 'text-gray-200 cursor-not-allowed'
+                              : 'text-green-500 hover:bg-green-50'
+                            }`}>
+                          {addingToCart === item._id
+                            ? <div className="w-3.5 h-3.5 border border-gray-300 border-t-transparent rounded-full animate-spin" />
+                            : item.prescriptionRequired
+                              ? <FileText size={15} />
+                              : <ShoppingCart size={15} />}
+                        </button>
+                        <button
+                          onClick={() => handleEdit(item)}
+                          className="p-2 text-gray-400 hover:text-black hover:bg-gray-50 rounded-lg transition-all">
+                          <Edit size={15} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(item._id)}
+                          className="p-2 text-gray-200 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all">
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>
@@ -652,9 +674,9 @@ const Products = () => {
                     {previewUrl
                       ? <img src={previewUrl} className="w-full h-full object-cover" alt="preview" />
                       : <div className="text-center">
-                          <ImagePlus size={36} className="text-gray-200 group-hover:text-black transition-colors mx-auto mb-2" />
-                          <span className="text-xs text-gray-300">Click to upload</span>
-                        </div>}
+                        <ImagePlus size={36} className="text-gray-200 group-hover:text-black transition-colors mx-auto mb-2" />
+                        <span className="text-xs text-gray-300">Click to upload</span>
+                      </div>}
                     <input id="imageInput" type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
                   </div>
                 </div>
@@ -687,9 +709,9 @@ const Products = () => {
 
                 {/* Text fields */}
                 {[
-                  { name: 'description', label: 'Description',  rows: 3, ph: 'Product details...'    },
-                  { name: 'howToUse',    label: 'How To Use',   rows: 2, ph: 'Usage instructions...' },
-                  { name: 'safetyInfo',  label: 'Safety Info',  rows: 2, ph: 'Warnings...'           },
+                  { name: 'description', label: 'Description', rows: 3, ph: 'Product details...' },
+                  { name: 'howToUse', label: 'How To Use', rows: 2, ph: 'Usage instructions...' },
+                  { name: 'safetyInfo', label: 'Safety Info', rows: 2, ph: 'Warnings...' },
                 ].map(f => (
                   <div key={f.name}>
                     <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 block mb-1">

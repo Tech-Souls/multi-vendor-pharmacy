@@ -8,15 +8,15 @@ import { syncPot1 } from "./helpers/syncPot1.js";
 
 const CONFIG = {
   PACKAGING_COST_EX_VAT: 2.50,
-  DELIVERY_COST_EX_VAT:  5.00,
-  PAYMENT_FEE_RATE:      0.015,
-  VAT_RATE_STANDARD:     0.20,
-  VAT_RATE_POM:          0.00,
+  DELIVERY_COST_EX_VAT: 5.00,
+  PAYMENT_FEE_RATE: 0.015,
+  VAT_RATE_STANDARD: 0.20,
+  VAT_RATE_POM: 0.00,
 };
 
 const calculateCommission = (revenueExVat, cogsExVat, totalIncVat) => {
-  const packaging  = CONFIG.PACKAGING_COST_EX_VAT;
-  const delivery   = CONFIG.DELIVERY_COST_EX_VAT;
+  const packaging = CONFIG.PACKAGING_COST_EX_VAT;
+  const delivery = CONFIG.DELIVERY_COST_EX_VAT;
   const paymentFee = parseFloat((totalIncVat * CONFIG.PAYMENT_FEE_RATE).toFixed(2));
   const commission = parseFloat(
     Math.max(0, revenueExVat - cogsExVat - packaging - delivery - paymentFee).toFixed(2)
@@ -37,16 +37,16 @@ export const createOrder = async (req, res) => {
 
     let prescriber = null;
     if (prescriberId) {
-      prescriber = await User.findOne({ _id: prescriberId, role: "prescriber" });
+      prescriber = await User.findOne({ prescriberId: prescriberId, role: "prescriber" }); // ✅
       if (!prescriber) {
         return res.status(404).json({ message: "Prescriber not found" });
       }
     }
 
     let revenueExVat = 0;
-    let cogsExVat    = 0;
-    let outputVat    = 0; // VAT charged to patient (owed to HMRC for standard items)
-    let inputVat     = 0; // VAT paid when buying stock (always reclaimable)
+    let cogsExVat = 0;
+    let outputVat = 0; // VAT charged to patient (owed to HMRC for standard items)
+    let inputVat = 0; // VAT paid when buying stock (always reclaimable)
     const orderItems = [];
     const stockUpdates = [];
 
@@ -74,21 +74,21 @@ export const createOrder = async (req, res) => {
         if (medicine.stock >= item.quantity) {
           isGeneralStock = true;
         } else {
-          return res.status(400).json({ 
-            message: `Insufficient stock for: ${medicine.name}` 
+          return res.status(400).json({
+            message: `Insufficient stock for: ${medicine.name}`
           });
         }
       }
 
-      const isPOM   = medicine.prescriptionRequired;
+      const isPOM = medicine.prescriptionRequired;
       const vatRate = isPOM ? CONFIG.VAT_RATE_POM : CONFIG.VAT_RATE_STANDARD;
-      const lineRevExVat  = medicine.sellingPrice * item.quantity;
-      const lineCostExVat = medicine.buyingPrice  * item.quantity;
+      const lineRevExVat = medicine.sellingPrice * item.quantity;
+      const lineCostExVat = medicine.buyingPrice * item.quantity;
 
       revenueExVat += lineRevExVat;
-      cogsExVat    += lineCostExVat;
-      outputVat    += lineRevExVat  * vatRate;                    // 0 for POM, 20% for standard
-      inputVat     += lineCostExVat * CONFIG.VAT_RATE_STANDARD;  // pharmacy always pays 20% on purchases
+      cogsExVat += lineCostExVat;
+      outputVat += lineRevExVat * vatRate;                    // 0 for POM, 20% for standard
+      inputVat += lineCostExVat * CONFIG.VAT_RATE_STANDARD;  // pharmacy always pays 20% on purchases
 
       orderItems.push({
         product: medicine._id,
@@ -108,13 +108,13 @@ export const createOrder = async (req, res) => {
     }
 
     // ── Financial Calculations ────────────────────────────────
-    const totalIncVat        = parseFloat((revenueExVat + outputVat).toFixed(2));
+    const totalIncVat = parseFloat((revenueExVat + outputVat).toFixed(2));
     const { packaging, delivery, paymentFee, commission } = calculateCommission(revenueExVat, cogsExVat, totalIncVat);
 
     // Per-spec derived values
-    const vatPositionImpact   = parseFloat((inputVat - outputVat).toFixed(2));  // + means HMRC owes pot
+    const vatPositionImpact = parseFloat((inputVat - outputVat).toFixed(2));  // + means HMRC owes pot
     const immediateCashImpact = parseFloat((totalIncVat - paymentFee - packaging - delivery).toFixed(2));
-    const trueProfitImpact    = parseFloat((immediateCashImpact + vatPositionImpact).toFixed(2));
+    const trueProfitImpact = parseFloat((immediateCashImpact + vatPositionImpact).toFixed(2));
 
     // ── Save Order ────────────────────────────────────────────
     const order = await Order.create({
@@ -126,12 +126,12 @@ export const createOrder = async (req, res) => {
       financials: {
         revenueExVat,
         cogsExVat,
-        packagingCostExVat:  packaging,
-        deliveryCostExVat:   delivery,
+        packagingCostExVat: packaging,
+        deliveryCostExVat: delivery,
         paymentFee,
-        commissionExVat:     commission,
-        outputVat:           parseFloat(outputVat.toFixed(2)),
-        inputVat:            parseFloat(inputVat.toFixed(2)),
+        commissionExVat: commission,
+        outputVat: parseFloat(outputVat.toFixed(2)),
+        inputVat: parseFloat(inputVat.toFixed(2)),
         vatPositionImpact,
         immediateCashImpact,
         trueProfitImpact,
@@ -155,7 +155,7 @@ export const createOrder = async (req, res) => {
     // ── Pot Syncing (Only if prescriber is involved) ──────────
     if (prescriberId && prescriber) {
       const actualPrescriberId = prescriber.prescriberId;
-      
+
       let pot = await OnePort.findOne({ prescriberId: actualPrescriberId });
       if (!pot) {
         pot = await OnePort.create({
@@ -163,7 +163,7 @@ export const createOrder = async (req, res) => {
           prescriberId: actualPrescriberId,
         });
       }
-      
+
       const pot1Before = pot.stockValue || 0;
 
       await syncPot1(actualPrescriberId);
@@ -270,18 +270,18 @@ export const createOrder = async (req, res) => {
       message: "Order placed successfully",
       orderId: order._id,
       financialSummary: {
-        revenueExVat:        revenueExVat.toFixed(2),
-        cogsExVat:           cogsExVat.toFixed(2),
-        packaging:           packaging.toFixed(2),
-        delivery:            delivery.toFixed(2),
-        paymentFee:          paymentFee.toFixed(2),
-        commission:          commission.toFixed(2),
-        outputVat:           outputVat.toFixed(2),
-        inputVat:            inputVat.toFixed(2),
-        vatPositionImpact:   vatPositionImpact.toFixed(2),
+        revenueExVat: revenueExVat.toFixed(2),
+        cogsExVat: cogsExVat.toFixed(2),
+        packaging: packaging.toFixed(2),
+        delivery: delivery.toFixed(2),
+        paymentFee: paymentFee.toFixed(2),
+        commission: commission.toFixed(2),
+        outputVat: outputVat.toFixed(2),
+        inputVat: inputVat.toFixed(2),
+        vatPositionImpact: vatPositionImpact.toFixed(2),
         immediateCashImpact: immediateCashImpact.toFixed(2),
-        trueProfitImpact:    trueProfitImpact.toFixed(2),
-        totalIncVat:         totalIncVat.toFixed(2),
+        trueProfitImpact: trueProfitImpact.toFixed(2),
+        totalIncVat: totalIncVat.toFixed(2),
       },
     });
   } catch (err) {
@@ -298,13 +298,13 @@ export const getAllOrders = async (req, res) => {
   try {
     const { prescriberId, status, commissionStatus, limit = 100, page = 1 } = req.query;
     const filter = {};
-    if (prescriberId)     filter.prescriberId     = prescriberId;
-    if (status)           filter.status           = status;
+    if (prescriberId) filter.prescriberId = prescriberId;
+    if (status) filter.status = status;
     if (commissionStatus) filter.commissionStatus = commissionStatus;
 
     const [orders, count] = await Promise.all([
       Order.find(filter)
-        .populate("customer",   "firstName lastName email")
+        .populate("customer", "firstName lastName email")
         .populate("prescriber", "firstName lastName prescriberId practiceName")
         .sort({ createdAt: -1 })
         .skip((page - 1) * limit)
@@ -340,10 +340,10 @@ export const getCommissionSummary = async (req, res) => {
       { $match: { commissionStatus: "pending" } },
       {
         $group: {
-          _id:             "$prescriberId",
+          _id: "$prescriberId",
           totalCommission: { $sum: "$financials.commissionExVat" },
-          totalRevenue:    { $sum: "$financials.revenueExVat" },
-          orderCount:      { $sum: 1 },
+          totalRevenue: { $sum: "$financials.revenueExVat" },
+          orderCount: { $sum: 1 },
         },
       },
       { $sort: { totalCommission: -1 } },
@@ -387,12 +387,12 @@ export const getMyStats = async (req, res) => {
       { $match: { prescriberId } },
       {
         $group: {
-          _id:               null,
-          totalRevenue:      { $sum: "$financials.revenueExVat" },
-          totalCommission:   { $sum: "$financials.commissionExVat" },
-          totalOutputVat:    { $sum: "$financials.outputVat" },
-          totalInputVat:     { $sum: "$financials.inputVat" },
-          totalOrders:       { $sum: 1 },
+          _id: null,
+          totalRevenue: { $sum: "$financials.revenueExVat" },
+          totalCommission: { $sum: "$financials.commissionExVat" },
+          totalOutputVat: { $sum: "$financials.outputVat" },
+          totalInputVat: { $sum: "$financials.inputVat" },
+          totalOrders: { $sum: 1 },
         },
       },
     ]);
@@ -404,10 +404,10 @@ export const getMyStats = async (req, res) => {
       { $match: { prescriberId, createdAt: { $gte: sixMonthsAgo } } },
       {
         $group: {
-          _id:        { year: { $year: "$createdAt" }, month: { $month: "$createdAt" } },
-          revenue:    { $sum: "$financials.revenueExVat" },
+          _id: { year: { $year: "$createdAt" }, month: { $month: "$createdAt" } },
+          revenue: { $sum: "$financials.revenueExVat" },
           commission: { $sum: "$financials.commissionExVat" },
-          orders:     { $sum: 1 },
+          orders: { $sum: 1 },
         },
       },
       { $sort: { "_id.year": 1, "_id.month": 1 } },

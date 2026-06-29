@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { BiCloudUpload, BiTrash } from 'react-icons/bi';
 import axios from 'axios';
+import toast, { Toaster } from "react-hot-toast";
 
 const MediaManager = () => {
   const [mediaList, setMediaList] = useState([]);
@@ -57,15 +58,49 @@ const MediaManager = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Remove this media?")) return;
-    try {
-      await axios.delete(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/media/${id}`);
-      fetchMedia();
-    } catch (err) {
-      console.error("Delete failed:", err);
-    }
-  };
+const handleDelete = async (id) => {
+  const confirmed = await new Promise((resolve) => {
+    toast(
+      (t) => (
+        <div className="flex items-center justify-between gap-6 px-4 py-3 bg-white rounded-2xl shadow-lg min-w-[360px]">
+          <div>
+            <p className="text-sm font-bold text-gray-800">Delete Media?</p>
+            <p className="text-xs text-gray-400 mt-0.5">Cannot undo</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => { toast.dismiss(t.id); resolve(true); }}
+              className="px-4 py-1.5 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-lg transition-colors duration-200"
+            >
+              Delete
+            </button>
+            <button
+              onClick={() => { toast.dismiss(t.id); resolve(false); }}
+              className="px-4 py-1.5 border border-gray-200 hover:bg-gray-50 text-gray-700 text-sm font-medium rounded-lg transition-colors duration-200"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        duration: Infinity,
+        position: "top-center",
+        style: { background: "transparent", boxShadow: "none", padding: 0 },
+      }
+    );
+  });
+
+  if (!confirmed) return;
+  try {
+    await axios.delete(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/media/${id}`);
+    fetchMedia();
+    toast.success("Media deleted");
+  } catch (err) {
+    console.error("Delete failed:", err);
+    toast.error("Failed to delete media");
+  }
+};
 
   const getMediaUrl = (filePath) => {
     if (!filePath) return '';

@@ -480,7 +480,7 @@ const Home = () => {
                       <img
                         src={formattedImageUrl}
                         alt={slide.title}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-fill"
                         onError={(e) => { e.target.src = "https://placehold.co/1920x600/e2e8f0/475569?text=Pharmacy+Supply"; }}
                       />
                       <div className="absolute inset-0 bg-gradient-to-r from-slate-900/70 via-slate-900/50 to-slate-900/30" />

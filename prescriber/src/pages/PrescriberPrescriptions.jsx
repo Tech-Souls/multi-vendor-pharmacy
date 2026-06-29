@@ -3,20 +3,22 @@ import { FileText, Search, Eye, Trash2 } from 'lucide-react'; // ✅ FIX: Added 
 import { useNavigate } from 'react-router-dom';
 import PrescriberHeader from '../components/prescriber/PrescriberHeader';
 import API from '../api/axios';
+import toast, { Toaster } from "react-hot-toast";
+
 
 const statusConfig = {
-  pending:    'bg-amber-50 text-amber-600 border-amber-200',
-  approved:   'bg-blue-50 text-blue-600 border-blue-200',
-  rejected:   'bg-red-50 text-red-500 border-red-200',
-  dispensed:  'bg-green-50 text-green-600 border-green-200',
+  pending: 'bg-amber-50 text-amber-600 border-amber-200',
+  approved: 'bg-blue-50 text-blue-600 border-blue-200',
+  rejected: 'bg-red-50 text-red-500 border-red-200',
+  dispensed: 'bg-green-50 text-green-600 border-green-200',
 };
 
 const PrescriberPrescriptions = () => {
   const navigate = useNavigate();
   const [prescriptions, setPrescriptions] = useState([]);
-  const [loading,       setLoading]       = useState(true);
-  const [search,        setSearch]        = useState('');
-  const [filter,        setFilter]        = useState('all');
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState('all');
 
   useEffect(() => {
     const fetchPrescriptions = async () => {
@@ -49,16 +51,48 @@ const PrescriberPrescriptions = () => {
   });
 
   const handleDelete = async (prescriptionId) => {
-    if (!window.confirm('Delete this prescription? This action cannot be undone.')) return;
+    const confirmed = await new Promise((resolve) => {
+      toast(
+        (t) => (
+          <div className="flex items-center justify-between gap-6 px-4 py-3 bg-white rounded-2xl shadow-lg min-w-[360px]">
+            <div>
+              <p className="text-sm font-bold text-gray-800">Delete Prescription?</p>
+              <p className="text-xs text-gray-400 mt-0.5">Cannot undo</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => { toast.dismiss(t.id); resolve(true); }}
+                className="px-4 py-1.5 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-lg transition-colors duration-200"
+              >
+                Delete
+              </button>
+              <button
+                onClick={() => { toast.dismiss(t.id); resolve(false); }}
+                className="px-4 py-1.5 border border-gray-200 hover:bg-gray-50 text-gray-700 text-sm font-medium rounded-lg transition-colors duration-200"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        ),
+        {
+          duration: Infinity,
+          position: "top-center",
+          style: { background: "transparent", boxShadow: "none", padding: 0 },
+        }
+      );
+    });
+
+    if (!confirmed) return;
     try {
       await API.delete(`/prescriptions/${prescriptionId}`);
       setPrescriptions(prev => prev.filter(p => p._id !== prescriptionId));
+      toast.success("Prescription deleted.");
     } catch (error) {
-      console.error('Failed to delete:', error);
-      alert(error.response?.data?.message || 'Unable to delete prescription');
+      console.error("Failed to delete:", error);
+      toast.error(error.response?.data?.message || "Unable to delete prescription.");
     }
   };
-
   const handleStatusUpdate = async (prescriptionId, status) => {
     try {
       const response = await API.patch(`/prescriptions/verify/${prescriptionId}`, { status });
@@ -103,9 +137,8 @@ const PrescriberPrescriptions = () => {
           <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
             {statuses.map(s => (
               <button key={s} onClick={() => setFilter(s)}
-                className={`px-3 py-2 rounded-xl text-xs font-semibold whitespace-nowrap capitalize transition-all ${
-                  filter === s ? 'bg-slate-800 text-white' : 'bg-white border border-slate-200 text-slate-500 hover:border-slate-400'
-                }`}>
+                className={`px-3 py-2 rounded-xl text-xs font-semibold whitespace-nowrap capitalize transition-all ${filter === s ? 'bg-slate-800 text-white' : 'bg-white border border-slate-200 text-slate-500 hover:border-slate-400'
+                  }`}>
                 {s}
               </button>
             ))}
@@ -157,9 +190,8 @@ const PrescriberPrescriptions = () => {
                       {p.treatment || p.method || '—'}
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border capitalize ${
-                        statusConfig[p.status] || 'bg-slate-50 text-slate-500 border-slate-200'
-                      }`}>
+                      <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border capitalize ${statusConfig[p.status] || 'bg-slate-50 text-slate-500 border-slate-200'
+                        }`}>
                         {p.status || 'unknown'}
                       </span>
                     </td>

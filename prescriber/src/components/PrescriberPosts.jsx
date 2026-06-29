@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import api from '../api/axios';
 import { BiCloudUpload, BiTrash } from 'react-icons/bi';
+import toast, { Toaster } from "react-hot-toast";
+
 
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 
@@ -63,15 +65,49 @@ const PrescriberPosts = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Delete this post?')) return;
-    try {
-      await api.delete(`/posts/${id}`);
-      fetchPosts();
-    } catch (err) {
-      console.error('Delete error:', err);
-    }
-  };
+ const handleDelete = async (id) => {
+  const confirmed = await new Promise((resolve) => {
+    toast(
+      (t) => (
+        <div className="flex items-center justify-between gap-6 px-4 py-3 bg-white rounded-2xl shadow-lg min-w-[360px]">
+          <div>
+            <p className="text-sm font-bold text-gray-800">Delete Post?</p>
+            <p className="text-xs text-gray-400 mt-0.5">Cannot undo</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => { toast.dismiss(t.id); resolve(true); }}
+              className="px-4 py-1.5 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-lg transition-colors duration-200"
+            >
+              Delete
+            </button>
+            <button
+              onClick={() => { toast.dismiss(t.id); resolve(false); }}
+              className="px-4 py-1.5 border border-gray-200 hover:bg-gray-50 text-gray-700 text-sm font-medium rounded-lg transition-colors duration-200"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        duration: Infinity,
+        position: "top-center",
+        style: { background: "transparent", boxShadow: "none", padding: 0 },
+      }
+    );
+  });
+
+  if (!confirmed) return;
+  try {
+    await api.delete(`/posts/${id}`);
+    fetchPosts();
+    toast.success("Post deleted");
+  } catch (err) {
+    console.error("Delete error:", err);
+    toast.error("Failed to delete post");
+  }
+};
 
   return (
     <div className="p-8 max-w-5xl">

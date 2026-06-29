@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Trash2, PlusCircle, Link, Image as ImageIcon, FileText, Type, Upload } from "lucide-react";
+import toast, { Toaster } from "react-hot-toast";
+
 
 
 const SliderManager = () => {
@@ -112,24 +114,49 @@ const SliderManager = () => {
   };
 
   // Permanently drop a canvas record row entry point
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to permanently delete this slider entry?")) return;
-
-    try {
-      const res = await fetch(`${API_URL}/${id}`, {
-        method: "DELETE",
-      });
-
-      if (res.ok) {
-        setSliders(sliders.filter((slide) => slide._id !== id));
-      } else {
-        const data = await res.json();
-        alert(data.message || "Unable to clear slide trace.");
+const handleDelete = async (id) => {
+  const confirmed = await new Promise((resolve) => {
+    toast(
+      (t) => (
+        <div className="flex items-center justify-between gap-6 px-4 py-3 bg-white rounded-2xl shadow-lg min-w-[360px]">
+          <div>
+            <p className="text-sm font-bold text-gray-800">Delete Slide?</p>
+            <p className="text-xs text-gray-400 mt-0.5">Cannot undo</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => { toast.dismiss(t.id); resolve(true); }}
+              className="px-4 py-1.5 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-lg transition-colors duration-200"
+            >
+              Delete
+            </button>
+            <button
+              onClick={() => { toast.dismiss(t.id); resolve(false); }}
+              className="px-4 py-1.5 border border-gray-200 hover:bg-gray-50 text-gray-700 text-sm font-medium rounded-lg transition-colors duration-200"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        duration: Infinity,
+        position: "top-center",
+        style: { background: "transparent", boxShadow: "none", padding: 0 },
       }
-    } catch (err) {
-      console.error("Error executing slide removal lifecycle handler:", err);
-    }
-  };
+    );
+  });
+
+  if (!confirmed) return;
+  try {
+    await api.delete(`/posts/${id}`);
+    fetchPosts();
+    toast.success("Post deleted");
+  } catch (err) {
+    console.error("Delete error:", err);
+    toast.error("Failed to delete post");
+  }
+};
 
   return (
     <div className="min-h-screen bg-white text-slate-800">

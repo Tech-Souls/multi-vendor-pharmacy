@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { User, Search, Phone, Mail, MapPin, Trash2, Calendar, CreditCard, Info } from 'lucide-react';
 import PrescriberHeader from '../components/prescriber/PrescriberHeader';
 import API from '../api/axios';
+import toast, { Toaster } from "react-hot-toast";
+
 
 const PrescriberPatient = () => {
   const [patients, setPatients] = useState([]);
@@ -45,16 +47,49 @@ useEffect(() => {
   });
 
   const handleDelete = async (patientId) => {
-    if (!window.confirm('Delete this patient and all associated records?')) return;
-    try {
-      await API.delete(`/prescriber-link/patients/${patientId}`);
-      setPatients((prev) => prev.filter((p) => p._id !== patientId));
-      if (selected?._id === patientId) setSelected(null);
-    } catch (error) {
-      console.error('Failed to delete patient:', error);
-      alert('Unable to delete patient');
-    }
-  };
+  const confirmed = await new Promise((resolve) => {
+    toast(
+      (t) => (
+        <div className="flex items-center justify-between gap-6 px-4 py-3 bg-white rounded-2xl shadow-lg min-w-[360px]">
+          <div>
+            <p className="text-sm font-bold text-gray-800">Delete Patient?</p>
+            <p className="text-xs text-gray-400 mt-0.5">All associated records will be removed</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => { toast.dismiss(t.id); resolve(true); }}
+              className="px-4 py-1.5 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-lg transition-colors duration-200"
+            >
+              Delete
+            </button>
+            <button
+              onClick={() => { toast.dismiss(t.id); resolve(false); }}
+              className="px-4 py-1.5 border border-gray-200 hover:bg-gray-50 text-gray-700 text-sm font-medium rounded-lg transition-colors duration-200"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        duration: Infinity,
+        position: "top-center",
+        style: { background: "transparent", boxShadow: "none", padding: 0 },
+      }
+    );
+  });
+
+  if (!confirmed) return;
+  try {
+    await API.delete(`/prescriber-link/patients/${patientId}`);
+    setPatients((prev) => prev.filter((p) => p._id !== patientId));
+    if (selected?._id === patientId) setSelected(null);
+    toast.success("Patient deleted.");
+  } catch (error) {
+    console.error("Failed to delete patient:", error);
+    toast.error("Unable to delete patient.");
+  }
+};
 
   return (
     <div className="min-h-screen bg-slate-50 antialiased">

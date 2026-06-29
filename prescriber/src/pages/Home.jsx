@@ -311,7 +311,7 @@ const Home = () => {
                   <img
                     src={slide.imageUrl ? (slide.imageUrl.startsWith('http') ? slide.imageUrl : (slide.imageUrl.startsWith('uploads') ? `${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/${slide.imageUrl}` : `${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/uploads/${slide.imageUrl}`)) : PLACEHOLDER_HERO}
                     alt={slide.title}
-                    className="w-full h-full object-cover select-none"
+                    className="w-full h-full object-fill select-none"
                     onError={(e) => { e.target.src = PLACEHOLDER_HERO; }}
                   />
                   <div className="absolute inset-0 bg-black/40" />
