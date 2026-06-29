@@ -136,28 +136,28 @@ const SliderManager = () => {
       {/* Dynamic Main Nav Header Element */}
       <Header title="Homepage Slider" />
       
-      <div className="p-6 max-w-7xl mx-auto">
+      <div className="p-4 sm:p-5 md:p-6 max-w-7xl mx-auto">
         {/* Professional Title Block Section */}
-        <div className="mb-6">
-          <h1 className="text-xl font-bold border-b border-slate-100 pb-2 inline-block text-slate-900">
+        <div className="mb-4 sm:mb-5 md:mb-6">
+          <h1 className="text-lg sm:text-xl font-bold border-b border-slate-100 pb-2 inline-block text-slate-900">
             Slider Management Console
           </h1>
-          <p className="text-slate-500 text-xs mt-1">
+          <p className="text-slate-500 text-[10px] sm:text-xs mt-1">
             Configure promotional displays, target links, and imagery mapped to the application hero slider track.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8 mt-4 sm:mt-5 md:mt-6">
           {/* LEFT COMPONENT: Creation Interface Pane */}
-          <div className="lg:col-span-1 bg-slate-50 p-6 rounded-xl border border-slate-200 shadow-sm h-fit">
-            <h2 className="text-sm font-semibold text-slate-900 mb-5 flex items-center gap-2">
+          <div className="lg:col-span-1 bg-slate-50 p-4 sm:p-5 md:p-6 rounded-xl border border-slate-200 shadow-sm h-fit">
+            <h2 className="text-sm font-semibold text-slate-900 mb-4 sm:mb-5 flex items-center gap-2">
               <PlusCircle size={16} className="text-blue-600" /> Setup Banner Segment
             </h2>
 
-            {error && <div className="p-3 mb-4 text-xs bg-red-50 border border-red-200 text-red-600 rounded-lg font-medium">{error}</div>}
-            {success && <div className="p-3 mb-4 text-xs bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-lg font-medium">{success}</div>}
+            {error && <div className="p-2 sm:p-3 mb-3 sm:mb-4 text-xs bg-red-50 border border-red-200 text-red-600 rounded-lg font-medium">{error}</div>}
+            {success && <div className="p-2 sm:p-3 mb-3 sm:mb-4 text-xs bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-lg font-medium">{success}</div>}
 
-            <form onSubmit={handleSubmit} className="space-y-4" encType="multipart/form-data">
+            <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4" encType="multipart/form-data">
               <div>
                 <label className="text-xs font-semibold text-slate-700 block mb-1.5">Slide Title</label>
                 <div className="relative">
@@ -169,7 +169,7 @@ const SliderManager = () => {
                     value={formData.title}
                     onChange={handleChange}
                     placeholder="e.g., Premium Clinical Distribution"
-                    className="w-full bg-white pl-10 pr-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 transition-all shadow-sm"
+                    className="w-full bg-white pl-10 pr-3 sm:pr-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 transition-all shadow-sm"
                   />
                 </div>
               </div>
@@ -185,7 +185,7 @@ const SliderManager = () => {
                     value={formData.description}
                     onChange={handleChange}
                     placeholder="Provide details about this promotional offer or application notice..."
-                    className="w-full bg-white pl-10 pr-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 transition-all shadow-sm resize-none"
+                    className="w-full bg-white pl-10 pr-3 sm:pr-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 transition-all shadow-sm resize-none"
                   />
                 </div>
               </div>
@@ -193,7 +193,7 @@ const SliderManager = () => {
               {/* ── DRAG & DROP / INTERACTIVE FILE UPLOADER TRACK ── */}
               <div>
                 <label className="text-xs font-semibold text-slate-700 block mb-1.5">Slide Image File</label>
-                <div className="group relative border-2 border-dashed border-slate-300 rounded-lg bg-white p-4 text-center hover:bg-slate-100/50 hover:border-slate-400 transition-all cursor-pointer flex flex-col items-center justify-center min-h-[120px]">
+                <div className="group relative border-2 border-dashed border-slate-300 rounded-lg bg-white p-3 sm:p-4 text-center hover:bg-slate-100/50 hover:border-slate-400 transition-all cursor-pointer flex flex-col items-center justify-center min-h-[100px] sm:min-h-[120px]">
                   <input
                     type="file"
                     name="image"
@@ -207,25 +207,25 @@ const SliderManager = () => {
                       <img 
                         src={imagePreview} 
                         alt="Preview Window" 
-                        className="h-28 w-full object-cover rounded-md border border-slate-200" 
+                        className="h-20 sm:h-24 md:h-28 w-full object-cover rounded-md border border-slate-200" 
                       />
-                      <p className="text-[10px] text-blue-600 font-medium mt-2 truncate">
+                      <p className="text-[10px] text-blue-600 font-medium mt-2 truncate max-w-full">
                         Selected: {imageFile?.name} (Click or drag to swap)
                       </p>
                     </div>
                   ) : (
                     <div className="space-y-1.5">
-                      <Upload className="mx-auto h-6 w-6 text-slate-400 group-hover:text-blue-500 transition-colors" />
-                      <p className="text-xs text-slate-600 font-medium">
+                      <Upload className="mx-auto h-5 sm:h-6 w-5 sm:w-6 text-slate-400 group-hover:text-blue-500 transition-colors" />
+                      <p className="text-[11px] sm:text-xs text-slate-600 font-medium">
                         Click to upload or drag image here
                       </p>
-                      <p className="text-[10px] text-slate-400">Supports PNG, JPG, JPEG, or WEBP</p>
+                      <p className="text-[9px] sm:text-[10px] text-slate-400">Supports PNG, JPG, JPEG, or WEBP</p>
                     </div>
                   )}
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 xs:grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-semibold text-slate-700 block mb-1.5">Button Text</label>
                   <input
@@ -262,15 +262,15 @@ const SliderManager = () => {
           </div>
 
           {/* RIGHT COMPONENT: Interactive Realtime Visual Feed Layer */}
-          <div className="lg:col-span-2 space-y-4">
+          <div className="lg:col-span-2 space-y-3 sm:space-y-4">
             <h2 className="text-sm font-semibold text-slate-900 mb-2">Live Banners Track ({sliders.length})</h2>
             
             {sliders.length === 0 ? (
-              <div className="bg-slate-50 border-2 border-dashed border-slate-200 p-12 text-center rounded-xl text-slate-400 text-sm font-medium">
+              <div className="bg-slate-50 border-2 border-dashed border-slate-200 p-8 sm:p-10 md:p-12 text-center rounded-xl text-slate-400 text-sm font-medium">
                 No active slider records configured. Generate one using the setup form configuration panel.
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-4">
+              <div className="grid grid-cols-1 gap-3 sm:gap-4">
                 {sliders.map((slide) => {
                   // Resolve dynamic URLs: formats back-slashes or missing domain headers automatically
                   const formattedImageUrl = slide.imageUrl?.startsWith("http")
@@ -278,26 +278,26 @@ const SliderManager = () => {
                     : `${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/${slide.imageUrl?.replace(/\\/g, "/")}`;
 
                   return (
-                    <div key={slide._id} className="bg-white border border-slate-200 rounded-xl p-4 flex flex-col md:flex-row gap-4 items-center shadow-sm relative group hover:border-slate-300 transition-all">
+                    <div key={slide._id} className="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row gap-3 sm:gap-4 items-start sm:items-center shadow-sm relative group hover:border-slate-300 transition-all">
                       
                       {/* Aspect Card Preview Block Container Element */}
                       <img 
                         src={formattedImageUrl} 
                         alt={slide.title} 
-                        className="w-full md:w-44 h-24 object-cover rounded-lg bg-slate-100 border border-slate-200 shrink-0"
+                        className="w-full sm:w-32 md:w-40 lg:w-44 h-20 sm:h-24 md:h-24 object-cover rounded-lg bg-slate-100 border border-slate-200 shrink-0"
                         onError={(e) => { e.target.src = "https://placehold.co/600x400/f1f5f9/0f172a?text=Image+Not+Found"; }}
                       />
 
                       {/* Context Block Layout Elements */}
-                      <div className="flex-1 min-w-0 self-start md:self-center">
-                        <h3 className="font-bold text-base truncate text-slate-900">{slide.title}</h3>
-                        <p className="text-xs text-slate-500 line-clamp-2 mt-1">{slide.description}</p>
+                      <div className="flex-1 min-w-0 self-start sm:self-center">
+                        <h3 className="font-bold text-sm sm:text-base truncate text-slate-900">{slide.title}</h3>
+                        <p className="text-[11px] sm:text-xs text-slate-500 line-clamp-2 mt-1">{slide.description}</p>
                         
-                        <div className="mt-3 flex flex-wrap items-center gap-2">
-                          <span className="text-[10px] font-semibold bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded border border-slate-200">
+                        <div className="mt-2 sm:mt-3 flex flex-wrap items-center gap-1.5 sm:gap-2">
+                          <span className="text-[9px] sm:text-[10px] font-semibold bg-slate-100 text-slate-700 px-2 sm:px-2.5 py-0.5 rounded border border-slate-200">
                             Action: {slide.buttonText}
                           </span>
-                          <span className="text-[10px] font-medium text-slate-400 truncate max-w-[240px]">
+                          <span className="text-[9px] sm:text-[10px] font-medium text-slate-400 truncate max-w-[140px] sm:max-w-[200px] md:max-w-[240px]">
                             Path: {slide.buttonLink}
                           </span>
                         </div>
@@ -306,10 +306,10 @@ const SliderManager = () => {
                       {/* Delete Trigger Action Interface Node */}
                       <button
                         onClick={() => handleDelete(slide._id)}
-                        className="absolute top-4 right-4 md:static p-2 text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition duration-150 self-center shadow-sm"
+                        className="absolute top-3 right-3 sm:static p-1.5 sm:p-2 text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition duration-150 self-center shadow-sm"
                         title="Remove banner slide"
                       >
-                        <Trash2 size={15} />
+                        <Trash2 size={14} className="sm:w-[15px] sm:h-[15px]" />
                       </button>
                     </div>
                   );

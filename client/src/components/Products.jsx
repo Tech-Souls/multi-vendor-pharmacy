@@ -11,6 +11,75 @@ const SUBCATEGORIES = {
   Skincare:    ["Skincare", "Hair", "Make Up"],
 };
 
+// ─── Helper: Build image URL ───
+const buildImageUrl = (imagePath) => {
+  if (!imagePath) return null;
+  
+  try {
+    // Fix backslashes (Windows issue)
+    let cleanPath = imagePath.replace(/\\/g, '/');
+    
+    // Remove leading slash (avoid double slashes)
+    cleanPath = cleanPath.replace(/^\//, '');
+    
+    // Clean base URL
+    const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:4000').replace(/\/$/, '');
+    
+    // If it's already a full URL
+    if (cleanPath.startsWith('http://') || cleanPath.startsWith('https://')) {
+      return cleanPath;
+    }
+    
+    // If it's from public folder (starts with /)
+    if (cleanPath.startsWith('/')) {
+      return cleanPath;
+    }
+    
+    // Build full URL
+    return `${baseUrl}/${cleanPath}`;
+  } catch (error) {
+    console.error('Error building image URL:', error);
+    return null;
+  }
+};
+
+// ─── Image Component with proper error handling ───
+const ProductImage = ({ src, alt, className }) => {
+  const [imgSrc, setImgSrc] = useState(src);
+  const [hasError, setHasError] = useState(false);
+
+  useEffect(() => {
+    // Reset when src changes
+    setImgSrc(src);
+    setHasError(false);
+  }, [src]);
+
+  if (!src || hasError) {
+    return (
+      <div className="w-11 h-11 bg-gray-50 rounded-xl flex items-center justify-center border border-gray-100">
+        <Package size={16} className="text-gray-200" />
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={imgSrc}
+      alt={alt || 'Product'}
+      className={className || "w-full h-full object-cover"}
+      onError={(e) => {
+        console.error('❌ Image failed to load:', imgSrc);
+        setHasError(true);
+        // Hide the broken image
+        e.target.style.display = 'none';
+      }}
+      onLoad={() => {
+        console.log('✅ Image loaded successfully:', imgSrc);
+      }}
+    />
+  );
+};
+
 const Products = () => {
   const { addToCart } = useCart();
   const navigate      = useNavigate();
@@ -45,6 +114,14 @@ const Products = () => {
     try {
       const res  = await API.get("/medicines");
       const data = Array.isArray(res.data) ? res.data : (res.data.medicines || []);
+      
+      // Log to verify image paths
+      console.log('✅ Products fetched:', data.length);
+      if (data.length > 0) {
+        console.log('📸 Sample image path:', data[0].image);
+        console.log('📸 Full URL would be:', buildImageUrl(data[0].image));
+      }
+      
       setProducts(data);
     } catch (err) {
       console.error("error fetching products:", err);
@@ -110,9 +187,14 @@ const Products = () => {
       sku:                 product.sku                 || "",
       supplier:            product.supplier            || "",
     });
-    if (product.image) setPreviewUrl(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/${product.image}`);
+    if (product.image) {
+      const url = buildImageUrl(product.image);
+      console.log('🖼️ Setting preview URL:', url);
+      setPreviewUrl(url);
+    }
     if (product.additionalImages?.length) {
-      setAdditionalPreviews(product.additionalImages.map(img => `${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/${img}`));
+      const urls = product.additionalImages.map(img => buildImageUrl(img));
+      setAdditionalPreviews(urls);
     } else {
       setAdditionalPreviews([]);
     }
@@ -141,13 +223,17 @@ const Products = () => {
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    if (file) { setImageFile(file); setPreviewUrl(URL.createObjectURL(file)); }
+    if (file) { 
+      setImageFile(file); 
+      setPreviewUrl(URL.createObjectURL(file)); 
+    }
   };
 
   const handleAdditionalFiles = (e) => {
     const files = Array.from(e.target.files);
     if (additionalPreviews.length + files.length > 3) {
-      toast.error("Max 3 additional images"); return;
+      toast.error("Max 3 additional images"); 
+      return;
     }
     setAdditionalImages(prev => [...prev, ...files]);
     setAdditionalPreviews(prev => [...prev, ...files.map(f => URL.createObjectURL(f))]);
@@ -314,16 +400,28 @@ const Products = () => {
                     <p className="text-sm text-gray-300">No products found</p>
                   </td>
                 </tr>
-              ) : filteredProducts.map(item => (
+              ) : filteredProducts.map(item => {
+                // Build the image URL
+                const imageUrl = buildImageUrl(item.image);
+                
+                return (
                 <tr key={item._id} className="hover:bg-gray-50/60 transition-all">
 
                   {/* Product */}
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-3">
-                      <div className="w-11 h-11 bg-gray-50 rounded-xl overflow-hidden border border-gray-100 shrink-0 flex items-center justify-center">
-                        {item.image
-                          ? <img src={`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/${item.image}`} alt={item.name} className="w-full h-full object-cover" />
-                          : <Package size={16} className="text-gray-200" />}
+                      <div className="w-11 h-11 bg-gray-50 rounded-xl overflow-hidden border border-gray-100 shrink-0">
+                        {imageUrl ? (
+                          <ProductImage 
+                            src={imageUrl} 
+                            alt={item.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <Package size={16} className="text-gray-200" />
+                          </div>
+                        )}
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-black">{item.name}</p>
@@ -422,7 +520,7 @@ const Products = () => {
                     </div>
                   </td>
                 </tr>
-              ))}
+              )})}
             </tbody>
           </table>
         </div>

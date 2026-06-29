@@ -35,11 +35,14 @@ import ProductDetails from './pages/ProductDetails';
 import PrescriptionForm from './pages/Prescription-form';
 import PrescriberLink from './pages/PrescriberLink';
 import PrescriptionDetailed from './pages/PrescriptionDetialed';
+import HowItWorks from './pages/HowItWorks';
+import AboutUs from './pages/About';
+import ContactUs from './pages/Contact';
 
 import './App.css';
 
 // ── Placeholder pages ──────────────────────────────────────────
-const HowItWorks = () => (
+/*const HowItWorks = () => (
   <div className="min-h-screen flex items-center justify-center">
     <h1 className="text-2xl font-bold text-slate-700">How It Works</h1>
   </div>
@@ -53,7 +56,7 @@ const Contact = () => (
   <div className="min-h-screen flex items-center justify-center">
     <h1 className="text-2xl font-bold text-slate-700">Contact Us</h1>
   </div>
-);
+);*/
 
 // ── Placeholder tabs ───────────────────────────────────────────
 const InboxPage = () => (
@@ -147,8 +150,8 @@ const App = () => {
             <Route path="/forgot-password"        element={<ForgotPassword />} />
             <Route path="/reset-password/:token"  element={<ResetPassword />} />
             <Route path="/how-it-works"           element={<HowItWorks />} />
-            <Route path="/about"                  element={<About />} />
-            <Route path="/contact"                element={<Contact />} />
+            <Route path="/about"                  element={<AboutUs />} />
+            <Route path="/contact"                element={<ContactUs />} />
 
             {/* ── Cart ── */}
             <Route path="/cart" element={

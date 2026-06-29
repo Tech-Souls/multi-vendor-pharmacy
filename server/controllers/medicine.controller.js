@@ -24,11 +24,11 @@ export const createMedicine = async (req, res) => {
       expiryDate,
       prescriptionRequired: prescriptionRequired === "true" || prescriptionRequired === true,
       prescriptionType,
-      buyingPrice:  Number(buyingPrice)  || 0,
+      buyingPrice: Number(buyingPrice) || 0,
       sellingPrice: Number(sellingPrice) || Number(price) || 0,
-      price:        Number(price)        || Number(sellingPrice) || 0,
-      unitPrice:    Number(unitPrice)    || 0,
-      stock:        Number(stock)        || 0,
+      price: Number(price) || Number(sellingPrice) || 0,
+      unitPrice: Number(unitPrice) || 0,
+      stock: Number(stock) || 0,
       sku, supplier, dispensedBy,
       image: imagePath, additionalImages,
       sellerId: req.user?._id,
@@ -52,22 +52,24 @@ export const updateMedicine = async (req, res) => {
     if (req.files?.additionalImages?.length > 0)
       updates.additionalImages = req.files.additionalImages.map((f) => f.path.replace(/\\/g, "/"));
 
-    if (updates.buyingPrice)  updates.buyingPrice  = Number(updates.buyingPrice);
+    if (updates.buyingPrice) updates.buyingPrice = Number(updates.buyingPrice);
     if (updates.sellingPrice) updates.sellingPrice = Number(updates.sellingPrice);
-    if (updates.price)        updates.price        = Number(updates.price);
-    if (updates.unitPrice)    updates.unitPrice    = Number(updates.unitPrice);
-    if (updates.stock)        updates.stock        = Number(updates.stock);
+    if (updates.price) updates.price = Number(updates.price);
+    if (updates.unitPrice) updates.unitPrice = Number(updates.unitPrice);
+    if (updates.stock) updates.stock = Number(updates.stock);
 
     if (updates.prescriptionRequired !== undefined)
       updates.prescriptionRequired = updates.prescriptionRequired === "true" || updates.prescriptionRequired === true;
 
-    // ✅ Clear subCategory if not Injectables
-    if (updates.category && updates.category !== "Injectables")
-      updates.subCategory = null;
+    // ✅ Clear subCategory if not Injectables or Skincare
+    if (updates.category && !["Injectables", "Skincare"].includes(updates.category))
+      updates.subCategory = null
 
     const medicine = await Medicine.findByIdAndUpdate(
       req.params.id, updates, { new: true, runValidators: true }
     );
+
+    
 
     if (!medicine) return res.status(404).json({ message: "Medicine not found" });
     res.status(200).json({ message: "Medicine updated successfully", medicine });
@@ -82,7 +84,7 @@ export const getAllMedicines = async (req, res) => {
   try {
     const { category, subCategory } = req.query;
     const filter = {};
-    if (category)    filter.category    = category;
+    if (category) filter.category = category;
     if (subCategory) filter.subCategory = subCategory;
 
     const medicines = await Medicine.find(filter).sort({ createdAt: -1 });

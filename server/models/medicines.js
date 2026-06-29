@@ -56,10 +56,14 @@ const medicineSchema = new mongoose.Schema(
   }
 );
 
-// ✅ Clear subCategory if category is not Injectables
+// ✅ Clear subCategory if category is not Injectables or skincare
 medicineSchema.pre("save", function (next) {
-  if (this.category !== "Injectables") this.subCategory = null;
-  // next();
+  // Only clear subCategory if the category doesn't have valid subcategories
+  const categoriesWithSubcategories = ["Injectables", "Skincare"];
+  if (!categoriesWithSubcategories.includes(this.category)) {
+    this.subCategory = null;
+  }
+  //next();
 });
 
 medicineSchema.virtual("profitMargin").get(function () {
