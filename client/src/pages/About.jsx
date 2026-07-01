@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   ShieldCheck, 
   Scale, 
@@ -22,6 +22,43 @@ const Eyebrow = ({ children }) => (
 
 export default function AboutUs() {
   const navigate = useNavigate();
+  const [contactSettings, setContactSettings] = useState(null);
+  const [loadingSettings, setLoadingSettings] = useState(true);
+
+  // Fetch contact settings on component mount
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await fetch('http://localhost:4000/api/contact-settings');
+        const data = await response.json();
+        
+        if (response.ok) {
+          setContactSettings(data.data);
+        }
+      } catch (error) {
+        console.error('Error fetching settings:', error);
+      } finally {
+        setLoadingSettings(false);
+      }
+    };
+
+    fetchSettings();
+  }, []);
+
+  // Default values if settings not loaded
+  const defaultSettings = {
+    pharmacyName: 'Time Pharmacy',
+    pharmacyDisplayName: 'Healthcare Time Ltd t/a Time Pharmacy',
+    gphcPremisesNo: 'GPhC Premises No: 9010453',
+    address: '[Insert Registered Business Address Details]',
+    country: 'United Kingdom',
+    phoneNumber: '+44 (0) 20 0000 0000',
+    email: 'support@drgpharma.com',
+    operatingHours: 'Monday – Friday: 09:00 to 18:00',
+    weekendHours: 'Saturday – Sunday: Closed'
+  };
+
+  const settings = contactSettings || defaultSettings;
 
   return (
     <div className="bg-white text-slate-900 min-h-screen" style={{ fontFamily: "'DM Sans','Segoe UI',sans-serif" }}>
@@ -52,7 +89,7 @@ export default function AboutUs() {
             </h1>
             
             <p className="text-base sm:text-lg md:text-xl text-white/80 max-w-xl leading-relaxed">
-              DrGPharma provides dedicated technical interfaces and secure, tracked distribution for medical cosmetic injectors, operating in partnership with Time Pharmacy.
+              DrGPharma provides dedicated technical interfaces and secure, tracked distribution for medical cosmetic injectors, operating in partnership with {settings.pharmacyName}.
             </p>
 
             <div className="flex flex-wrap gap-3 mt-8">
@@ -81,8 +118,8 @@ export default function AboutUs() {
             <h2 
               className="font-serif text-3xl sm:text-4xl font-bold text-slate-900 mb-4"
             >
-              Healthcare Time Ltd <br className="hidden sm:block" />
-              <span className="text-teal-600">t/a Time Pharmacy</span>
+              {settings.pharmacyDisplayName || 'Healthcare Time Ltd'} <br className="hidden sm:block" />
+              <span className="text-teal-600">t/a {settings.pharmacyName}</span>
             </h2>
             <p className="text-sm text-slate-600 leading-relaxed mb-6">
               All prescription medications (POM) and medical consumables ordered via this platform are reviewed, validated, and dispensed under the strict oversight of our registered pharmacy premises.
@@ -95,7 +132,7 @@ export default function AboutUs() {
                 </div>
                 <div>
                   <span className="text-sm font-bold text-slate-900">GPhC Registered Premises</span>
-                  <p className="font-mono text-xs text-slate-400">Premises Registration Number: 9010453</p>
+                  <p className="font-mono text-xs text-slate-400">{settings.gphcPremisesNo || 'Premises Registration Number: 9010453'}</p>
                 </div>
               </div>
               <p className="text-xs text-slate-500 leading-relaxed pl-13">
@@ -146,7 +183,7 @@ export default function AboutUs() {
             {[
               { num: '229', label: 'Licensed products available', icon: Package },
               { num: '100%', label: 'FMD-compliant e-prescriptions', icon: ShieldCheck },
-              { num: 'GPhC', label: 'Registered pharmacy: 9010453', icon: Award }
+              { num: 'GPhC', label: `Registered pharmacy: ${settings.gphcPremisesNo?.replace('GPhC Premises No: ', '') || '9010453'}`, icon: Award }
             ].map((s, idx) => (
               <div key={idx} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all hover:border-teal-200">
                 <div className="flex items-center gap-3 mb-2">
@@ -212,30 +249,30 @@ export default function AboutUs() {
           <div>
             <Eyebrow>Visit Our Pharmacy</Eyebrow>
             <h3 className="font-serif text-2xl font-bold text-slate-900 mb-4">
-              Time Pharmacy <span className="text-teal-600">Premises</span>
+              {settings.pharmacyName} <span className="text-teal-600">Premises</span>
             </h3>
             <div className="space-y-3 text-sm text-slate-600">
               <div className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-teal-600 shrink-0 mt-0.5" />
                 <div>
-                  <p>Healthcare Time Ltd</p>
-                  <p>t/a Time Pharmacy</p>
-                  <p className="text-slate-400 text-xs mt-1">Registration Number: 9010453</p>
+                  <p>{settings.pharmacyDisplayName || 'Healthcare Time Ltd'}</p>
+                  <p>t/a {settings.pharmacyName}</p>
+                  <p className="text-slate-400 text-xs mt-1">{settings.gphcPremisesNo || 'Registration Number: 9010453'}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <Phone className="w-5 h-5 text-teal-600 shrink-0" />
-                <span>+44 (0) 20 1234 5678</span>
+                <span>{settings.phoneNumber || '+44 (0) 20 1234 5678'}</span>
               </div>
               <div className="flex items-center gap-3">
                 <Mail className="w-5 h-5 text-teal-600 shrink-0" />
-                <span>pharmacy@drgpharma.co.uk</span>
+                <span>{settings.email || 'pharmacy@drgpharma.co.uk'}</span>
               </div>
               <div className="flex items-start gap-3">
                 <Clock className="w-5 h-5 text-teal-600 shrink-0 mt-0.5" />
                 <div>
-                  <p>Monday - Friday: 9:00 AM - 6:00 PM</p>
-                  <p className="text-slate-400 text-xs">Saturday: 10:00 AM - 2:00 PM</p>
+                  <p>{settings.operatingHours || 'Monday - Friday: 9:00 AM - 6:00 PM'}</p>
+                  <p className="text-slate-400 text-xs">{settings.weekendHours || 'Saturday: 10:00 AM - 2:00 PM'}</p>
                 </div>
               </div>
             </div>

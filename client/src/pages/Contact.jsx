@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Mail, Phone, MapPin, Clock, ShieldCheck, Send, Sparkles, MessageCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
@@ -19,28 +19,127 @@ export default function ContactUs() {
     message: ''
   });
   const [sending, setSending] = useState(false);
+  const [contactSettings, setContactSettings] = useState(null);
+  const [loadingSettings, setLoadingSettings] = useState(true);
 
-  const handleSubmit = (e) => {
+  // Fetch contact settings on component mount
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await fetch('http://localhost:4000/api/contact-settings');
+        const data = await response.json();
+        
+        if (response.ok) {
+          setContactSettings(data.data);
+        }
+      } catch (error) {
+        console.error('Error fetching settings:', error);
+      } finally {
+        setLoadingSettings(false);
+      }
+    };
+
+    fetchSettings();
+  }, []);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setSending(true);
     
-    setTimeout(() => {
-      toast.success("Query submitted successfully. Our pharmacy team will respond within 24 hours.");
-      setFormData({
-        name: '',
-        email: '',
-        professionalReg: '',
-        subject: 'General Inquiry',
-        message: ''
+    try {
+      const response = await fetch('http://localhost:4000/api/contacts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
       });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success("Query submitted successfully. Our pharmacy team will respond within 24 hours.");
+        setFormData({
+          name: '',
+          email: '',
+          professionalReg: '',
+          subject: 'General Inquiry',
+          message: ''
+        });
+      } else {
+        if (data.errors) {
+          data.errors.forEach(err => toast.error(err));
+        } else {
+          toast.error(data.message || 'Failed to submit query');
+        }
+      }
+    } catch (error) {
+      toast.error('Network error. Please try again.');
+    } finally {
       setSending(false);
-    }, 1200);
+    }
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
+
+  // Default values while loading or if settings not available
+  const defaultSettings = {
+    pharmacyName: 'Time Pharmacy',
+    address: '[Insert Registered Business Address Details]',
+    country: 'United Kingdom',
+    gphcPremisesNo: 'GPhC Premises No: 9010453',
+    operatingHours: 'Monday – Friday: 09:00 to 18:00',
+    weekendHours: 'Saturday – Sunday: Closed',
+    pomCutoff: 'POM Cut-off: 15:00 for same-day dispatch',
+    phoneNumber: '+44 (0) 20 0000 0000',
+    phoneBadge: 'Clinical queries / Prescriber validation desk',
+    email: 'support@drgpharma.com',
+    emailBadge: 'Submit scanned manual Rx forms here'
+  };
+
+  const settings = contactSettings || defaultSettings;
+
+  // Contact information array with dynamic data
+  const contactInfo = [
+    {
+      icon: MapPin,
+      title: "Registered Dispensary",
+      details: (
+        <>
+          {settings.pharmacyName}<br />
+          {settings.address}<br />
+          {settings.country}
+        </>
+      ),
+      badge: settings.gphcPremisesNo
+    },
+    {
+      icon: Clock,
+      title: "Operational Hours",
+      details: (
+        <>
+          {settings.operatingHours}<br />
+          {settings.weekendHours}
+        </>
+      ),
+      badge: settings.pomCutoff
+    },
+    {
+      icon: Phone,
+      title: "Direct Phone Lines",
+      details: settings.phoneNumber,
+      badge: settings.phoneBadge
+    },
+    {
+      icon: Mail,
+      title: "Email Channels",
+      details: settings.email,
+      badge: settings.emailBadge
+    }
+  ];
 
   return (
     <div className="bg-white text-slate-900 min-h-screen" style={{ fontFamily: "'DM Sans','Segoe UI',sans-serif" }}>
@@ -107,45 +206,9 @@ export default function ContactUs() {
               </p>
             </div>
 
-            {/* Contact Cards */}
+            {/* Contact Cards - Now using dynamic data */}
             <div className="space-y-4">
-              {[
-                {
-                  icon: MapPin,
-                  title: "Registered Dispensary",
-                  details: (
-                    <>
-                      Time Pharmacy<br />
-                      [Insert Registered Business Address Details]<br />
-                      United Kingdom
-                    </>
-                  ),
-                  badge: "GPhC Premises No: 9010453"
-                },
-                {
-                  icon: Clock,
-                  title: "Operational Hours",
-                  details: (
-                    <>
-                      Monday – Friday: 09:00 to 18:00<br />
-                      Saturday – Sunday: Closed
-                    </>
-                  ),
-                  badge: "POM Cut-off: 15:00 for same-day dispatch"
-                },
-                {
-                  icon: Phone,
-                  title: "Direct Phone Lines",
-                  details: "+44 (0) 20 0000 0000",
-                  badge: "Clinical queries / Prescriber validation desk"
-                },
-                {
-                  icon: Mail,
-                  title: "Email Channels",
-                  details: "support@drgpharma.com",
-                  badge: "Submit scanned manual Rx forms here"
-                }
-              ].map((item, idx) => (
+              {contactInfo.map((item, idx) => (
                 <div key={idx} className="flex gap-4 p-4 bg-white border border-slate-200 rounded-2xl hover:shadow-md transition-all hover:border-teal-200">
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-50 to-teal-100 flex items-center justify-center text-teal-700 shrink-0">
                     <item.icon className="w-5 h-5" />

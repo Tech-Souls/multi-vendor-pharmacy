@@ -22,6 +22,7 @@ import postroutes from './routes/post.routes.js'
 import footerRoutes from './routes/footerRoutes.js'
 import aboutRoutes from './routes/aboutRoutes.js'
 import contactRoutes from './routes/contactRoutes.js'
+import adminContactRoute from './routes/adminContactRoute.js'
 
 // Added unified media management route
 
@@ -87,6 +88,8 @@ app.use("/api/stock",           stockRoutes);
 app.use("/api/sliders",         sliderRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/media",           mediaRoutes); // Mounted new media framework route (Slider, Logos, Gallery)
+
+app.use('/api', adminContactRoute);
 
 // ── Health Check ──────────────────────────────────────────────
 app.get("/api/health", (req, res) => {
