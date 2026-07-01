@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Mail, Phone, MapPin, Clock, ShieldCheck, Send, Sparkles, MessageCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import API from '../api/axios';
 
 const Eyebrow = ({ children }) => (
   <span className="inline-flex px-3.5 py-1 rounded-full text-xs font-bold text-teal-600 bg-teal-50 border border-teal-100 mb-4 tracking-wider uppercase">
@@ -26,11 +27,9 @@ export default function ContactUs() {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const response = await fetch('http://localhost:4000/api/contact-settings');
-        const data = await response.json();
-        
-        if (response.ok) {
-          setContactSettings(data.data);
+        const response = await API.get('/contact-settings');
+        if (response.data) {
+          setContactSettings(response.data.data);
         }
       } catch (error) {
         console.error('Error fetching settings:', error);
@@ -45,19 +44,11 @@ export default function ContactUs() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSending(true);
-    
+
     try {
-      const response = await fetch('http://localhost:4000/api/contacts', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
+      const response = await API.post('/contacts', formData);
 
-      const data = await response.json();
-
-      if (response.ok) {
+      if (response.data) {
         toast.success("Query submitted successfully. Our pharmacy team will respond within 24 hours.");
         setFormData({
           name: '',
@@ -66,15 +57,14 @@ export default function ContactUs() {
           subject: 'General Inquiry',
           message: ''
         });
-      } else {
-        if (data.errors) {
-          data.errors.forEach(err => toast.error(err));
-        } else {
-          toast.error(data.message || 'Failed to submit query');
-        }
       }
     } catch (error) {
-      toast.error('Network error. Please try again.');
+      const errors = error.response?.data?.errors;
+      if (errors) {
+        errors.forEach(err => toast.error(err));
+      } else {
+        toast.error(error.response?.data?.message || 'Failed to submit query');
+      }
     } finally {
       setSending(false);
     }
@@ -147,8 +137,8 @@ export default function ContactUs() {
       {/* HERO SECTION with Background Image */}
       <section className="relative min-h-[400px] sm:min-h-[450px] md:min-h-[500px] flex items-center overflow-hidden">
         <div className="absolute inset-0">
-          <img 
-            src="https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=1600&q=80" 
+          <img
+            src="https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=1600&q=80"
             alt="Contact our pharmacy team"
             className="w-full h-full object-fill"
           />
@@ -162,12 +152,12 @@ export default function ContactUs() {
               <MessageCircle className="w-4 h-4 text-teal-400" />
               <span className="text-xs font-semibold text-teal-300 tracking-wider uppercase">Clinical Help Desk</span>
             </div>
-            
+
             <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl font-bold text-white leading-tight mb-4">
               Contact Our <br className="hidden sm:block" />
               <span className="text-teal-400">Pharmacy Team</span>
             </h1>
-            
+
             <p className="text-base sm:text-lg md:text-xl text-white/80 max-w-xl leading-relaxed">
               Contact our registered pharmacists directly for clinical concerns, account verification queries, or delivery updates.
             </p>
@@ -193,7 +183,7 @@ export default function ContactUs() {
       {/* CORE CONTACT LAYOUT */}
       <section className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
-          
+
           {/* Left: Contact Information */}
           <div className="lg:col-span-5 space-y-8">
             <div className="space-y-4">
@@ -250,7 +240,7 @@ export default function ContactUs() {
                   <p className="text-xs text-slate-400">Our pharmacy team will respond within 24 hours</p>
                 </div>
               </div>
-              
+
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">

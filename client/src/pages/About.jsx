@@ -13,6 +13,7 @@ import {
   Package 
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import API from '../api/axios'
 
 const Eyebrow = ({ children }) => (
   <span className="inline-flex px-3.5 py-1 rounded-full text-xs font-bold text-teal-600 bg-teal-50 border border-teal-100 mb-4 tracking-wider uppercase">
@@ -27,23 +28,21 @@ export default function AboutUs() {
 
   // Fetch contact settings on component mount
   useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const response = await fetch('http://localhost:4000/api/contact-settings');
-        const data = await response.json();
-        
-        if (response.ok) {
-          setContactSettings(data.data);
-        }
-      } catch (error) {
-        console.error('Error fetching settings:', error);
-      } finally {
-        setLoadingSettings(false);
+  const fetchSettings = async () => {
+    try {
+      const response = await API.get('/contact-settings');
+      if (response.data) {
+        setContactSettings(response.data.data);
       }
-    };
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+    } finally {
+      setLoadingSettings(false);
+    }
+  };
 
-    fetchSettings();
-  }, []);
+  fetchSettings();
+}, []);
 
   // Default values if settings not loaded
   const defaultSettings = {

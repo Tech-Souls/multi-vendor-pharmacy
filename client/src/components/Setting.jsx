@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import Header from './Header';
 import toast from 'react-hot-toast';
 import { Mail, Trash2, RefreshCw, X, Settings, Phone, Building, Save } from 'lucide-react';
+import API from '../api/axios';
 
 const Setting = () => {
   const [pharmacyForm, setPharmacyForm] = useState({
@@ -49,11 +50,9 @@ const Setting = () => {
   const fetchContacts = async () => {
     setLoadingContacts(true);
     try {
-      const response = await fetch('http://localhost:4000/api/contacts');
-      const data = await response.json();
-      
-      if (response.ok) {
-        setContacts(data.data);
+      const response = await API.get('/contacts');
+      if (response.data) {
+        setContacts(response.data.data || []);
       }
     } catch (error) {
       toast.error('Failed to fetch messages');
@@ -65,11 +64,9 @@ const Setting = () => {
   const fetchContactSettings = async () => {
     setLoadingContact(true);
     try {
-      const response = await fetch('http://localhost:4000/api/contact-settings');
-      const data = await response.json();
-      
-      if (response.ok) {
-        setContactSettings(data.data);
+      const response = await API.get('/contact-settings');
+      if (response.data) {
+        setContactSettings(response.data.data);
       }
     } catch (error) {
       toast.error('Failed to fetch contact settings');
@@ -81,24 +78,13 @@ const Setting = () => {
   const handleSaveContactSettings = async () => {
     setSavingContact(true);
     try {
-      const response = await fetch('http://localhost:4000/api/contact-settings', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(contactSettings),
-      });
-
-      const data = await response.json();
-      
-      if (response.ok) {
+      const response = await API.put('/contact-settings', contactSettings);
+      if (response.data) {
         toast.success('Contact settings saved successfully');
-        setContactSettings(data.data);
-      } else {
-        toast.error(data.message || 'Failed to save settings');
+        setContactSettings(response.data.data);
       }
     } catch (error) {
-      toast.error('Network error');
+      toast.error(error.response?.data?.message || 'Failed to save settings');
     } finally {
       setSavingContact(false);
     }
@@ -107,19 +93,12 @@ const Setting = () => {
   const deleteContact = async (id) => {
     setDeletingId(id);
     try {
-      const response = await fetch(`http://localhost:4000/api/contacts/${id}`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        toast.success('Message deleted successfully');
-        setContacts(contacts.filter(contact => contact._id !== id));
-        setDeleteConfirm(null);
-      } else {
-        toast.error('Failed to delete');
-      }
+      await API.delete(`/contacts/${id}`);
+      toast.success('Message deleted successfully');
+      setContacts(contacts.filter(contact => contact._id !== id));
+      setDeleteConfirm(null);
     } catch (error) {
-      toast.error('Network error');
+      toast.error(error.response?.data?.message || 'Failed to delete');
     } finally {
       setDeletingId(null);
     }
@@ -167,31 +146,28 @@ const Setting = () => {
         <div className="flex gap-2 mb-6 border-b border-blue-50 overflow-x-auto">
           <button
             onClick={() => setActiveTab('contact')}
-            className={`px-4 py-2 text-sm font-medium transition whitespace-nowrap ${
-              activeTab === 'contact'
+            className={`px-4 py-2 text-sm font-medium transition whitespace-nowrap ${activeTab === 'contact'
                 ? 'text-blue-900 border-b-2 border-blue-900'
                 : 'text-blue-400 hover:text-blue-600'
-            }`}
+              }`}
           >
             Contact Settings
           </button>
           <button
             onClick={() => setActiveTab('financial')}
-            className={`px-4 py-2 text-sm font-medium transition whitespace-nowrap ${
-              activeTab === 'financial'
+            className={`px-4 py-2 text-sm font-medium transition whitespace-nowrap ${activeTab === 'financial'
                 ? 'text-blue-900 border-b-2 border-blue-900'
                 : 'text-blue-400 hover:text-blue-600'
-            }`}
+              }`}
           >
             Financial Rules
           </button>
           <button
             onClick={() => setActiveTab('messages')}
-            className={`px-4 py-2 text-sm font-medium transition whitespace-nowrap flex items-center gap-1 ${
-              activeTab === 'messages'
+            className={`px-4 py-2 text-sm font-medium transition whitespace-nowrap flex items-center gap-1 ${activeTab === 'messages'
                 ? 'text-blue-900 border-b-2 border-blue-900'
                 : 'text-blue-400 hover:text-blue-600'
-            }`}
+              }`}
           >
             Messages <span className="bg-blue-100 text-blue-600 text-xs px-2 py-0.5 rounded-full">{contacts.length}</span>
           </button>
@@ -214,43 +190,43 @@ const Setting = () => {
                     <Building className="w-4 h-4" />
                     Pharmacy Information
                   </h3>
-                  
+
                   <div>
                     <label className="block text-xs font-bold text-blue-500 uppercase mb-1">Pharmacy Name</label>
                     <input
                       type="text"
                       value={contactSettings.pharmacyName || ''}
-                      onChange={(e) => setContactSettings({...contactSettings, pharmacyName: e.target.value})}
+                      onChange={(e) => setContactSettings({ ...contactSettings, pharmacyName: e.target.value })}
                       className="w-full bg-white border border-blue-100 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 transition-colors"
                     />
                   </div>
-                  
+
                   <div>
                     <label className="block text-xs font-bold text-blue-500 uppercase mb-1">Address</label>
                     <input
                       type="text"
                       value={contactSettings.address || ''}
-                      onChange={(e) => setContactSettings({...contactSettings, address: e.target.value})}
+                      onChange={(e) => setContactSettings({ ...contactSettings, address: e.target.value })}
                       className="w-full bg-white border border-blue-100 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 transition-colors"
                     />
                   </div>
-                  
+
                   <div>
                     <label className="block text-xs font-bold text-blue-500 uppercase mb-1">Country</label>
                     <input
                       type="text"
                       value={contactSettings.country || ''}
-                      onChange={(e) => setContactSettings({...contactSettings, country: e.target.value})}
+                      onChange={(e) => setContactSettings({ ...contactSettings, country: e.target.value })}
                       className="w-full bg-white border border-blue-100 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 transition-colors"
                     />
                   </div>
-                  
+
                   <div>
                     <label className="block text-xs font-bold text-blue-500 uppercase mb-1">GPhC Premises No</label>
                     <input
                       type="text"
                       value={contactSettings.gphcPremisesNo || ''}
-                      onChange={(e) => setContactSettings({...contactSettings, gphcPremisesNo: e.target.value})}
+                      onChange={(e) => setContactSettings({ ...contactSettings, gphcPremisesNo: e.target.value })}
                       className="w-full bg-white border border-blue-100 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 transition-colors"
                     />
                   </div>
@@ -261,73 +237,73 @@ const Setting = () => {
                     <Phone className="w-4 h-4" />
                     Contact Information
                   </h3>
-                  
+
                   <div>
                     <label className="block text-xs font-bold text-blue-500 uppercase mb-1">Operating Hours</label>
                     <input
                       type="text"
                       value={contactSettings.operatingHours || ''}
-                      onChange={(e) => setContactSettings({...contactSettings, operatingHours: e.target.value})}
+                      onChange={(e) => setContactSettings({ ...contactSettings, operatingHours: e.target.value })}
                       className="w-full bg-white border border-blue-100 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 transition-colors"
                     />
                   </div>
-                  
+
                   <div>
                     <label className="block text-xs font-bold text-blue-500 uppercase mb-1">Weekend Hours</label>
                     <input
                       type="text"
                       value={contactSettings.weekendHours || ''}
-                      onChange={(e) => setContactSettings({...contactSettings, weekendHours: e.target.value})}
+                      onChange={(e) => setContactSettings({ ...contactSettings, weekendHours: e.target.value })}
                       className="w-full bg-white border border-blue-100 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 transition-colors"
                     />
                   </div>
-                  
+
                   <div>
                     <label className="block text-xs font-bold text-blue-500 uppercase mb-1">POM Cut-off</label>
                     <input
                       type="text"
                       value={contactSettings.pomCutoff || ''}
-                      onChange={(e) => setContactSettings({...contactSettings, pomCutoff: e.target.value})}
+                      onChange={(e) => setContactSettings({ ...contactSettings, pomCutoff: e.target.value })}
                       className="w-full bg-white border border-blue-100 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 transition-colors"
                     />
                   </div>
-                  
+
                   <div>
                     <label className="block text-xs font-bold text-blue-500 uppercase mb-1">Phone Number</label>
                     <input
                       type="text"
                       value={contactSettings.phoneNumber || ''}
-                      onChange={(e) => setContactSettings({...contactSettings, phoneNumber: e.target.value})}
+                      onChange={(e) => setContactSettings({ ...contactSettings, phoneNumber: e.target.value })}
                       className="w-full bg-white border border-blue-100 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 transition-colors"
                     />
                   </div>
-                  
+
                   <div>
                     <label className="block text-xs font-bold text-blue-500 uppercase mb-1">Phone Badge</label>
                     <input
                       type="text"
                       value={contactSettings.phoneBadge || ''}
-                      onChange={(e) => setContactSettings({...contactSettings, phoneBadge: e.target.value})}
+                      onChange={(e) => setContactSettings({ ...contactSettings, phoneBadge: e.target.value })}
                       className="w-full bg-white border border-blue-100 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 transition-colors"
                     />
                   </div>
-                  
+
                   <div>
                     <label className="block text-xs font-bold text-blue-500 uppercase mb-1">Email</label>
                     <input
                       type="text"
                       value={contactSettings.email || ''}
-                      onChange={(e) => setContactSettings({...contactSettings, email: e.target.value})}
+                      onChange={(e) => setContactSettings({ ...contactSettings, email: e.target.value })}
                       className="w-full bg-white border border-blue-100 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 transition-colors"
                     />
                   </div>
-                  
+
                   <div>
                     <label className="block text-xs font-bold text-blue-500 uppercase mb-1">Email Badge</label>
                     <input
                       type="text"
                       value={contactSettings.emailBadge || ''}
-                      onChange={(e) => setContactSettings({...contactSettings, emailBadge: e.target.value})}
+                      onChange={(e) => setContactSettings({ ...contactSettings, emailBadge: e.target.value })}
                       className="w-full bg-white border border-blue-100 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 transition-colors"
                     />
                   </div>
@@ -348,9 +324,7 @@ const Setting = () => {
                 onClick={async () => {
                   if (window.confirm('Reset all contact settings to default?')) {
                     try {
-                      await fetch('http://localhost:4000/api/contact-settings/reset', {
-                        method: 'DELETE',
-                      });
+                      await API.delete('/contact-settings/reset');
                       await fetchContactSettings();
                       toast.success('Settings reset to default');
                     } catch (error) {
@@ -375,8 +349,8 @@ const Setting = () => {
 
             <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-4 mb-6">
               <p className="text-blue-700 text-[9px] leading-relaxed">
-                <span className="font-bold uppercase mr-1">Policy:</span> 
-                Dr G retains 100% of net margin. Time Pharmacy is reimbursed exact costs only 
+                <span className="font-bold uppercase mr-1">Policy:</span>
+                Dr G retains 100% of net margin. Time Pharmacy is reimbursed exact costs only
                 (COGS + packaging + delivery).
               </p>
             </div>
@@ -486,7 +460,7 @@ const Setting = () => {
                           })}
                         </p>
                       </div>
-                      
+
                       <button
                         onClick={() => setDeleteConfirm({ id: contact._id, name: contact.name })}
                         className="text-red-400 hover:text-red-600 transition p-2 hover:bg-red-50 rounded-lg ml-4"
@@ -518,7 +492,7 @@ const Setting = () => {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            
+
             <div className="bg-red-50 rounded-lg p-3 mb-6">
               <p className="text-sm text-red-700">
                 <span className="font-semibold">From:</span> {deleteConfirm.name}
