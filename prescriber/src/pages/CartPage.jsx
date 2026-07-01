@@ -112,12 +112,8 @@ const CartPage = () => {
 
           {/* Title */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-black tracking-tight">Your Cart</h1>
-            <p className="text-sm text-gray-400 mt-1">
-              {items.length === 0
-                ? 'Nothing here yet'
-                : `${itemCount} item${itemCount !== 1 ? 's' : ''}`}
-            </p>
+            <h1 className="text-3xl font-bold text-black tracking-tight text-center ">Your Cart</h1>
+            
           </div>
 
           {/* Empty state */}
@@ -173,7 +169,7 @@ const CartPage = () => {
                       <button
                         onClick={() => handleRemove(item.productId)}
                         disabled={removing === item.productId}
-                        className="p-1.5 text-gray-200 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all">
+                        className="p-1.5 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all">
                         {removing === item.productId
                           ? <div className="w-3 h-3 border border-gray-300 border-t-transparent rounded-full animate-spin" />
                           : <Trash2 size={13} />}

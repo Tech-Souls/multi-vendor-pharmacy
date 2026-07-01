@@ -6,22 +6,22 @@ import { useCart } from '../context/CartContext';
 import { toast } from 'react-hot-toast';
 
 const ProductDetails = () => {
-  const { id }        = useParams();
-  const navigate      = useNavigate();
+  const { id } = useParams();
+  const navigate = useNavigate();
   const { addToCart } = useCart();
 
-  const [product,     setProduct]     = useState(null);
-  const [loading,     setLoading]     = useState(true);
-  const [quantity,    setQuantity]    = useState(1);
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(null);
-  const [adding,      setAdding]      = useState(false);
+  const [adding, setAdding] = useState(false);
 
   useEffect(() => {
     if (!id || id === 'undefined') { setLoading(false); return; }
     const fetchProduct = async () => {
       try {
         setLoading(true);
-        const res  = await API.get(`/medicines/${id}`);
+        const res = await API.get(`/medicines/${id}`);
         const data = res.data.medicine || res.data;
         setProduct(data);
         setActiveImage(data.image || data.primaryImage);
@@ -76,10 +76,10 @@ const ProductDetails = () => {
   );
 
   const extraImages = product.additionalImages || product.images || [];
-  const allImages   = [product.image || product.primaryImage, ...extraImages].filter(Boolean);
-  const totalPrice  = ((product.sellingPrice || product.price || 0) * quantity).toFixed(2);
-  const isRx        = product.prescriptionRequired;
-  const price       = (product.sellingPrice || product.price || 0).toFixed(2);
+  const allImages = [product.image || product.primaryImage, ...extraImages].filter(Boolean);
+  const totalPrice = ((product.sellingPrice || product.price || 0) * quantity).toFixed(2);
+  const isRx = product.prescriptionRequired;
+  const price = (product.sellingPrice || product.price || 0).toFixed(2);
 
   return (
     <div className="min-h-screen bg-white">
@@ -117,7 +117,7 @@ const ProductDetails = () => {
             <div className="aspect-square bg-gray-50 rounded-2xl overflow-hidden flex items-center justify-center group">
               {activeImage
                 ? <img src={getImageUrl(activeImage)} alt={product.name}
-                    className="w-full h-full object-contain p-8 group-hover:scale-105 transition-transform duration-700" />
+                  className="w-full h-full object-contain p-8 group-hover:scale-105 transition-transform duration-700" />
                 : <Package size={56} className="text-gray-100" />
               }
             </div>
@@ -125,9 +125,8 @@ const ProductDetails = () => {
               <div className="flex gap-2 overflow-x-auto no-scrollbar">
                 {allImages.map((img, idx) => (
                   <button key={idx} onClick={() => setActiveImage(img)}
-                    className={`w-16 h-16 rounded-xl overflow-hidden shrink-0 border-2 transition-all ${
-                      activeImage === img ? 'border-black' : 'border-transparent opacity-40 hover:opacity-70'
-                    }`}>
+                    className={`w-16 h-16 rounded-xl overflow-hidden shrink-0 border-2 transition-all ${activeImage === img ? 'border-black' : 'border-transparent opacity-40 hover:opacity-70'
+                      }`}>
                     <img src={getImageUrl(img)} className="w-full h-full object-cover" alt="" />
                   </button>
                 ))}
@@ -177,13 +176,12 @@ const ProductDetails = () => {
               </div>
               <div className="text-right">
                 <div className="flex items-center gap-1.5 justify-end mb-0.5">
-                  <div className={`w-1.5 h-1.5 rounded-full ${
-                    product.stock > 5 ? 'bg-green-500' :
-                    product.stock > 0 ? 'bg-amber-400' : 'bg-red-400'
-                  }`} />
+                  <div className={`w-1.5 h-1.5 rounded-full ${product.stock > 5 ? 'bg-green-500' :
+                      product.stock > 0 ? 'bg-amber-400' : 'bg-red-400'
+                    }`} />
                   <span className="text-sm font-semibold text-black">
                     {product.stock > 5 ? 'In Stock' :
-                     product.stock > 0 ? 'Low Stock' : 'Out of Stock'}
+                      product.stock > 0 ? 'Low Stock' : 'Out of Stock'}
                   </span>
                 </div>
                 <p className="text-xs text-gray-400">{product.stock} units available</p>
@@ -197,7 +195,7 @@ const ProductDetails = () => {
 
             {/* Dosage / Supplier */}
             {[
-              { label: 'Dosage',   value: product.dosage   },
+              { label: 'Dosage', value: product.dosage },
               { label: 'Supplier', value: product.supplier },
             ].filter(m => m.value).map(({ label, value }) => (
               <div key={label} className="flex items-center gap-3 -mt-3">
@@ -225,36 +223,36 @@ const ProductDetails = () => {
                 </button>
 
                 {/* ✅ Add to cart anyway — also goes to prescriptions */}
-               <button
-  onClick={async () => {
-    setAdding(true);
+                <button
+                  onClick={async () => {
+                    setAdding(true);
 
-    try {
-      await addToCart({ ...product, quantity });
+                    try {
+                      await addToCart({ ...product, quantity });
 
-      toast.success('Prescription is required for this product');
+                      toast.success('Prescription is required for this product');
 
-      setTimeout(() => {
-        navigate('/prescriptions');
-      }, 1500);
+                      setTimeout(() => {
+                        navigate('/prescriptions');
+                      }, 1500);
 
-    } catch {
-      toast.error('Failed to add to cart');
-    } finally {
-      setAdding(false);
-    }
-  }}
-  disabled={adding || product.stock === 0}
-  className="w-full flex items-center justify-center gap-2 text-sm font-medium text-gray-400 hover:text-black py-3 border border-gray-200 hover:border-gray-400 rounded-2xl transition-all disabled:opacity-40"
->
-  {adding ? (
-    <div className="w-4 h-4 border-2 border-gray-300 border-t-black rounded-full animate-spin" />
-  ) : (
-    <ShoppingCart size={14} />
-  )}
+                    } catch {
+                      toast.error('Failed to add to cart');
+                    } finally {
+                      setAdding(false);
+                    }
+                  }}
+                  disabled={adding || product.stock === 0}
+                  className="w-full flex items-center justify-center gap-2 text-sm font-medium text-gray-400 hover:text-black py-3 border border-gray-200 hover:border-gray-400 rounded-2xl transition-all disabled:opacity-40"
+                >
+                  {adding ? (
+                    <div className="w-4 h-4 border-2 border-gray-300 border-t-black rounded-full animate-spin" />
+                  ) : (
+                    <ShoppingCart size={14} />
+                  )}
 
-  Add to Cart
-</button>
+                  Add to Cart
+                </button>
               </div>
             ) : (
               <div className="space-y-4 pt-1">

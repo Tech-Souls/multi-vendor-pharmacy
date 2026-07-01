@@ -41,33 +41,6 @@ import ContactUs from './pages/Contact';
 
 import './App.css';
 
-// ── Placeholder pages ──────────────────────────────────────────
-/*const HowItWorks = () => (
-  <div className="min-h-screen flex items-center justify-center">
-    <h1 className="text-2xl font-bold text-slate-700">How It Works</h1>
-  </div>
-);
-const About = () => (
-  <div className="min-h-screen flex items-center justify-center">
-    <h1 className="text-2xl font-bold text-slate-700">About Us</h1>
-  </div>
-);
-const Contact = () => (
-  <div className="min-h-screen flex items-center justify-center">
-    <h1 className="text-2xl font-bold text-slate-700">Contact Us</h1>
-  </div>
-);*/
-
-// ── Placeholder tabs ───────────────────────────────────────────
-const InboxPage = () => (
-  <div className="p-8 text-center text-slate-400 font-semibold">Prescriber Inbox — Coming Soon</div>
-);
-const HistoryPage = () => (
-  <div className="p-8 text-center text-slate-400 font-semibold">Prescription History — Coming Soon</div>
-);
-const PrescriptionSettings = () => (
-  <div className="p-8 text-center text-slate-400 font-semibold">Settings — Coming Soon</div>
-);
 
 // ── Header wrapper ─────────────────────────────────────────────
 // Only hides on /admin — prescriber now has its own separate app
@@ -168,9 +141,7 @@ const App = () => {
               />
               <Route path="prescription-form"     element={<PrescriptionForm />} />
               <Route path="prescriberLink"        element={<PrescriberLink />} />
-              <Route path="inbox"                 element={<InboxPage />} />
-              <Route path="history"               element={<HistoryPage />} />
-              <Route path="prescription-settings" element={<PrescriptionSettings />} />
+              
             </Route>
 
             {/* ── Admin Routes ── */}

@@ -63,6 +63,16 @@ const SectionHeading = ({ eyebrow, title, description, align = 'center' }) => (
   </div>
 );
 
+// feature bar array
+
+const features = [
+  { icon: Truck, title: "Free Shipping", sub: "Orders over £199" },
+  { icon: ShieldCheck, title: "SSL Encrypted", sub: "Secure Order System" },
+  { icon: Zap, title: "Fast Dispatch", sub: "Cut-off at 3:00 PM" },
+  { icon: FileCheck, title: "Verified Sourcing", sub: "GPhC/MHRA Supply Chains" },
+  { icon: Headset, title: "Clinical Support", sub: "Registered Pharmacists" },
+];
+
 const PlaceholderImage = ({ icon: Icon = Package, label = 'No Image' }) => (
   <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
     <div className="w-12 sm:w-16 h-12 sm:h-16 rounded-full bg-white shadow-sm border border-slate-200 flex items-center justify-center">
@@ -620,6 +630,7 @@ const Home = () => {
 
         {/* ─── TRUST SECTION ─── */}
         <section className="py-10 sm:py-12 md:py-16 px-4 sm:px-6 md:px-8 lg:px-24 bg-slate-800 text-white border-t border-white/10">
+
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-6 sm:mb-8 md:mb-10">
               <span className="inline-flex items-center px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-semibold text-teal-300 bg-teal-500/10 border border-teal-500/20 mb-3 sm:mb-4 tracking-wide uppercase">
@@ -653,6 +664,7 @@ const Home = () => {
                 </div>
               ))}
             </div>
+
           </div>
         </section>
 
@@ -687,9 +699,9 @@ const Home = () => {
                   <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5">
                     <h3 className="text-sm sm:text-base font-semibold text-white mb-0.5">{cat.name}</h3>
                     <p className="text-[10px] sm:text-xs text-white/80 font-medium">{cat.count}</p>
-                    <div className="mt-1.5 sm:mt-2 flex items-center gap-1.5 sm:gap-2 text-teal-300 group-hover:text-teal-200 transition-colors">
-                      <span className="text-[10px] sm:text-xs font-semibold">View Products</span>
-                      <ArrowRight className="w-3 sm:w-3.5 h-3 sm:h-3.5 group-hover:translate-x-1 transition-transform" />
+                    <div className="mt-1.5 sm:mt-2 flex items-center gap-1.5 sm:gap-2 text-teal-300 group-hover:text-teal-200 transition-colors bg-slate-900/40 h-7 sm:h-8 px-2 sm:px-3 rounded-md w-fit">
+                      <span className="text-[10px] sm:text-xs font-semibold whitespace-nowrap">View Products</span>
+                      <ArrowRight className="w-3 sm:w-3.5 h-3 sm:h-3.5 group-hover:translate-x-1 transition-transform flex-shrink-0" />
                     </div>
                   </div>
                 </div>
@@ -699,20 +711,43 @@ const Home = () => {
         </section>
 
         {/* ─── FEATURE BAR ─── */}
-        <div className="bg-slate-800 border-y border-white/10 px-4 sm:px-6 md:px-8 lg:px-24 py-4 sm:py-5 md:py-6">
-          <div className="max-w-7xl mx-auto flex flex-wrap justify-center sm:justify-between items-center gap-4 sm:gap-5 md:gap-6 overflow-hidden">
-            {[
-              { icon: Truck, title: "Free Shipping", sub: "Orders over £199" },
-              { icon: ShieldCheck, title: "SSL Encrypted", sub: "Secure Order System" },
-              { icon: Zap, title: "Fast Dispatch", sub: "Cut-off at 3:00 PM" },
-              { icon: FileCheck, title: "Verified Sourcing", sub: "GPhC/MHRA Supply Chains" },
-              { icon: Headset, title: "Clinical Support", sub: "Registered Pharmacists" },
-            ].map((f, i) => (
-              <div key={i} className="flex items-center gap-3 sm:gap-4 group shrink-0">
+        <div className="relative bg-slate-800 border-y border-white/10 py-4 sm:py-5 md:py-6 overflow-hidden">
+          <style>{`
+           @keyframes brandScroll {
+             0% { transform: translateX(0); }
+             100% { transform: translateX(-50%); }
+           }
+           .brand-text-track {
+             display: flex;
+             align-items: center;
+             width: max-content;
+             animation: brandScroll 32s linear infinite;
+           }
+           .brand-text-track:hover {
+             animation-play-state: paused;
+           }
+           @media (prefers-reduced-motion: reduce) {
+             .brand-text-track {
+               animation: none;
+             }
+           }
+         `}</style>
+
+          {/* Edge fade masks */}
+          <div className="pointer-events-none absolute inset-y-0 left-0 w-12 sm:w-24 bg-gradient-to-r from-slate-800 to-transparent z-10" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 w-12 sm:w-24 bg-gradient-to-l from-slate-800 to-transparent z-10" />
+
+          <div className="brand-text-track">
+            {[...features, ...features].map((f, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-3 sm:gap-4 px-4 sm:px-6 md:px-8 group shrink-0"
+                aria-hidden={i >= features.length ? 'true' : undefined}
+              >
                 <span className="p-2 sm:p-2.5 bg-teal-500/20 text-teal-300 rounded-xl group-hover:bg-teal-500/30 transition-all duration-300">
                   <f.icon className="w-3 sm:w-4 h-3 sm:h-4" />
                 </span>
-                <div>
+                <div className="whitespace-nowrap">
                   <h3 className="font-semibold text-white text-[11px] sm:text-sm">{f.title}</h3>
                   <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5">{f.sub}</p>
                 </div>

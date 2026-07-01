@@ -33,7 +33,7 @@ export default function AboutUs() {
           <img 
             src="https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=1600&q=80" 
             alt="Modern pharmacy and medical clinic"
-            className="w-full h-full object-cover"
+            className="w-full h-full object-fill"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-slate-900/90 via-slate-900/70 to-slate-900/40" />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900/50 via-transparent to-transparent" />
@@ -71,9 +71,6 @@ export default function AboutUs() {
             </div>
           </div>
         </div>
-
-        {/* Bottom gradient fade */}
-        <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white to-transparent" />
       </section>
 
       {/* PHARMACY PARTNERSHIP */}

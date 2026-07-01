@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../api/axios';
 import { useCart } from '../context/CartContext';
-import { Search, SlidersHorizontal, ChevronRight, ShoppingBag, Package, Filter, X } from 'lucide-react';
+import { Search, SlidersHorizontal, ChevronRight, ShoppingBag, Package, Filter, X, Kanban } from 'lucide-react';
 
 // Category-specific descriptions
 const SUB_META = {
@@ -36,7 +36,7 @@ const Skincare = () => {
   const subCategoriesList = ['Hair', 'Skincare', 'Make Up'];
   const [activeSubCategory, setActiveSubCategory] = useState('Skincare');
 
-  const { addToCart } = useCart();
+  const {addToCart} =useCart()
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -318,6 +318,7 @@ const Skincare = () => {
                     <div className="flex items-center gap-1 sm:gap-2">
                       <span className="text-sm sm:text-base font-bold" style={{ color: COLORS.textPrimary }}>
                         £{(item.sellingPrice || item.price || 0).toFixed(2)}
+                        
                       </span>
                       {item.price && item.sellingPrice && item.sellingPrice < item.price && (
                         <span className="text-[9px] sm:text-xs line-through" style={{ color: COLORS.textLight }}>
@@ -345,7 +346,7 @@ const Skincare = () => {
       </div>
 
       {/* Custom styles for scrollbar hiding and animations */}
-      <style jsx>{`
+      <style>{`
         .scrollbar-hide::-webkit-scrollbar {
           display: none;
         }
@@ -380,3 +381,6 @@ const Skincare = () => {
 };
 
 export default Skincare;
+
+
+

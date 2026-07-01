@@ -150,7 +150,7 @@ const PrescriptionForm = () => {
   const selectClass = "w-full p-3 bg-slate-800/50 border border-slate-700 rounded-xl text-sm text-white font-medium outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/10 transition-all appearance-none";
 
   return (
-    <div className="bg-[#0f172a] min-h-screen font-sans pb-16 text-slate-200">
+    <div className="bg-white min-h-screen font-sans pb-16 text-slate-200">
 
       {/* Header */}
       <div className="bg-slate-900 border-b border-slate-800 px-8 py-5 mb-6">

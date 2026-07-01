@@ -12,9 +12,7 @@ const PrescriptionDetailed = () => {
   const tabs = [
     { name: 'Issue Prescription', path: '/prescription-form', icon: PencilLine },
     { name: 'PrescribeLink™',     path: '/prescriberLink',    icon: Link },
-    { name: 'Prescriber Inbox',   path: '/inbox',             icon: Inbox },
-    { name: 'Prescription History', path: '/history',         icon: History },
-    { name: 'Settings',           path: '/prescription-settings', icon: Settings },
+   
   ];
 
   return (

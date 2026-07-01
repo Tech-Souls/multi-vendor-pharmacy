@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../api/axios';
-import { useCart } from '../context/CartContext';
+import {useCart} from '../context/CartContext'
 import { Search, SlidersHorizontal, ShoppingBag, ChevronRight, Package, Filter, X } from 'lucide-react';
 
 const SUB_META = {
@@ -34,11 +34,8 @@ const Injectable = () => {
 
   const subCategoriesList = ['Toxins', 'HA Fillers', 'Skin Boosters', 'Polynucleotides'];
   const [activeSubCategory, setActiveSubCategory] = useState('Toxins');
+ const {addToCart} = useCart();
 
-  const cartContext = useCart();
-  const handleQuickAdd = cartContext?.handleQuickAdd
-    ? cartContext.handleQuickAdd
-    : (item) => console.log('Added:', item);
 
   useEffect(() => {
     const fetchInjectableProducts = async () => {
@@ -307,7 +304,7 @@ const Injectable = () => {
 
                   {/* Product Name */}
                   <h4
-                    onClick={() => navigate(`/product/${item._id}`)}
+                    onClick={() => handleQuickAdd(item)}
                     className="text-xs sm:text-sm font-semibold leading-snug line-clamp-2 cursor-pointer hover:opacity-70 transition-opacity min-h-[2rem] sm:min-h-[2.5rem]"
                     style={{ color: COLORS.textPrimary }}
                   >
@@ -327,7 +324,7 @@ const Injectable = () => {
                       )}
                     </div>
                     <button
-                      onClick={() => handleQuickAdd(item)}
+                      onClick={() => addToCart(item)}
                       className="flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs font-semibold uppercase tracking-wider px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 touch-manipulation"
                       style={{
                         backgroundColor: COLORS.primary,
@@ -346,7 +343,7 @@ const Injectable = () => {
       </div>
 
       {/* Custom styles for scrollbar hiding and animations */}
-      <style jsx>{`
+      <style>{`
         .scrollbar-hide::-webkit-scrollbar {
           display: none;
         }

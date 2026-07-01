@@ -142,7 +142,7 @@ const PrescriberLink = () => {
   const selectClass = `${inputClass} cursor-pointer`;
 
   return (
-    <div className="bg-slate-950 min-h-screen font-sans text-white">
+    <div className="bg-white min-h-screen font-sans text-white">
 
       {/* Header */}
       <div className="bg-slate-900 border-b border-slate-800 px-8 py-5 mb-6">
