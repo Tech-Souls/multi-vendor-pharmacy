@@ -13,45 +13,38 @@ export const getCart = async (req, res) => {
 };
 
 export const addToCart = async (req, res) => {
-  const { productId, name, price, image, quantity } = req.body;
+  const { productId, name, price, image, quantity, prescriptionRequired } = req.body;
   const userId = req.user._id;
 
   if (!productId || !name || price === undefined) {
     return res.status(400).json({ message: "productId, name and price are required" });
   }
 
-  try {
-    let cart = await Cart.findOne({ userId });
-    if (!cart) {
-      cart = new Cart({ userId, items: [], totalAmount: 0 });
-    }
-
-    const existingIndex = cart.items.findIndex(
-      (item) => item.productId.toString() === productId.toString()
-    );
-
-    if (existingIndex > -1) {
-      cart.items[existingIndex].quantity += quantity || 1;
-    } else {
-      cart.items.push({
-        productId: productId.toString(),
-        name,
-        price: Number(price),
-        image: image || "",
-        quantity: quantity || 1,
-      });
-    }
-
-    cart.totalAmount = cart.items.reduce(
-      (acc, item) => acc + Number(item.price) * item.quantity, 0
-    );
-
-    await cart.save();
-    return res.status(200).json(cart);
-  } catch (error) {
-    console.error("❌ addToCart error:", error.message);
-    res.status(500).json({ message: "Error adding to cart", error: error.message });
+  // Find user's cart
+  let cart = await Cart.findOne({ userId });
+  
+  if (!cart) {
+    cart = new Cart({ userId, items: [] });
   }
+
+  // Check if product already exists in cart
+  const existingItem = cart.items.find(item => item.productId.toString() === productId);
+  
+  if (existingItem) {
+    existingItem.quantity += quantity || 1;
+  } else {
+    cart.items.push({
+      productId,
+      name,
+      price,
+      image: image || '',
+      quantity: quantity || 1,
+      prescriptionRequired: prescriptionRequired || false //ADD THIS
+    });
+  }
+
+  await cart.save();
+  res.json(cart);
 };
 
 export const removeFromCart = async (req, res) => {

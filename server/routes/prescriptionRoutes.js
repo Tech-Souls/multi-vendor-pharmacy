@@ -27,11 +27,11 @@ router.post("/submit",              protect,           submitPrescription);
 router.post("/upload",              protect,           upload.single("image"), uploadPrescription);
 router.get("/status/:medicineId",   protect,           checkUserPrescriptionStatus);
 router.get('/my', protect, getMyPrescriptions);
-router.get('/:id', protect, getPrescriptionById); // 👈 ADD THIS - must be after '/my' to avoid conflict
 
 // Staff only (admin or prescriber)
 router.get("/pending",              ...staffOnly,      getPendingPrescriptions);
 router.patch("/verify/:id",         ...staffOnly,      verifyPrescription);
 router.delete('/:id', protect, deletePrescription);
+router.get('/:id', protect, getPrescriptionById); // 👈 ADD THIS - must be after '/my' to avoid conflict
 
 export default router;

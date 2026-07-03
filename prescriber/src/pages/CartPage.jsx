@@ -39,7 +39,7 @@ const CartPage = () => {
       setPrescribers(links);
       if (links.length === 1) {
         // Use the actual ID field (handling nested structure)
-       const id = links[0].prescriberId?.prescriberId || '';
+        const id = links[0].prescriberId?.prescriberId || '';
         setPrescriberId(id);
       }
     } catch (err) {
@@ -59,25 +59,35 @@ const CartPage = () => {
       navigate('/login');
       return;
     }
-    if (!prescriberId) {
-      toast.error('Please select a prescriber');
-      return;
-    }
+
     if (!deliveryAddress.line1 || !deliveryAddress.city || !deliveryAddress.postcode) {
       toast.error('Please enter your delivery address');
       return;
     }
 
+    // NOW this will work because prescriptionRequired is in cart items
+    const hasPrescriptionRequiredItem = items.some(item => item.prescriptionRequired === true);
+
+    if (hasPrescriptionRequiredItem) {
+      if (prescribers.length === 0) {
+        toast.error('Prescription required — please link a prescriber first');
+        navigate('/prescriptions');
+        return;
+      }
+
+      if (!prescriberId) {
+        toast.error('Please select a prescriber');
+        return;
+      }
+    }
+
+    // Proceed with order...
     setCheckingOut(true);
     try {
       const orderItems = items.map(item => ({
-        // Ensure this key matches what your backend API expects (e.g., medicineId or productId)
         medicineId: item.productId,
         quantity: item.quantity,
       }));
-
-      // DEBUG LOG: Check if data is correct before it reaches the server
-      console.log("DEBUG: Checkout Payload:", { prescriberId, items: orderItems, deliveryAddress });
 
       await API.post('/orders', {
         prescriberId,
@@ -89,8 +99,6 @@ const CartPage = () => {
       await clearCart();
       navigate('/');
     } catch (err) {
-      // DEBUG LOG: Check exactly why the server rejected the order
-      console.error("DEBUG: Order Error Response:", err.response?.data);
       toast.error(err.response?.data?.message || 'Server connection error');
     } finally {
       setCheckingOut(false);
@@ -113,7 +121,7 @@ const CartPage = () => {
           {/* Title */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-black tracking-tight text-center ">Your Cart</h1>
-            
+
           </div>
 
           {/* Empty state */}
@@ -145,11 +153,11 @@ const CartPage = () => {
                     <div className="w-16 h-16 bg-gray-50 rounded-xl overflow-hidden border border-gray-100 shrink-0 flex items-center justify-center">
                       {item.image
                         ? <img
-                            src={`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/${item.image}`}
-                            alt={item.name}
-                            className="w-full h-full object-cover"
-                            onError={e => { e.target.style.display = 'none'; }}
-                          />
+                          src={`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/${item.image}`}
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                          onError={e => { e.target.style.display = 'none'; }}
+                        />
                         : <Package size={18} className="text-gray-200" />}
                     </div>
 
