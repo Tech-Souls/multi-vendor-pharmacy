@@ -27,7 +27,7 @@ const Login = () => {
         setTimeout(() => navigate("/admin"), 500);
       } else if (role === "prescriber") {
         toast.success(`Welcome, ${data.user.firstName}!`);
-        setTimeout(() => navigate("/prescriber"), 500);
+        setTimeout(() => navigate("/dashboard"), 500);
       } else {
         toast.success("Logged in successfully!");
         setTimeout(() => navigate("/home"), 500);

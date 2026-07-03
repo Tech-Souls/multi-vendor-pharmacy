@@ -22,57 +22,62 @@ export const CartProvider = ({ children }) => {
   }, []);
 
   const addToCart = async (product) => {
-    const token = localStorage.getItem("token");
+  const token = localStorage.getItem("token");
 
-    // ── FIX: ensure price is always a valid number ────────────
-    const price = Number(
-      product.sellingPrice || product.price || product.unitPrice || 0
-    );
+  // ── FIX: ensure price is always a valid number ────────────
+  const price = Number(
+    product.sellingPrice || product.price || product.unitPrice || 0
+  );
 
-    if (!product._id || !product.name || price === 0) {
-      console.error("Invalid product data:", product);
-      throw new Error("Invalid product — missing id, name or price");
-    }
+  if (!product._id || !product.name || price === 0) {
+    console.error("Invalid product data:", product);
+    throw new Error("Invalid product — missing id, name or price");
+  }
 
-    const qty = Number(product.quantity) || 1;
+  const qty = Number(product.quantity) || 1;
+  
+  // ✅ Get prescriptionRequired from product
+  const prescriptionRequired = product.prescriptionRequired || false;
 
-    if (!token) {
-      setCart((prev) => {
-        const items    = prev?.items || [];
-        const existing = items.find((i) => i.productId === product._id);
-        if (existing) {
-          return {
-            ...prev,
-            items: items.map((i) =>
-              i.productId === product._id
-                ? { ...i, quantity: i.quantity + qty }
-                : i
-            ),
-          };
-        }
+  if (!token) {
+    setCart((prev) => {
+      const items = prev?.items || [];
+      const existing = items.find((i) => i.productId === product._id);
+      if (existing) {
         return {
           ...prev,
-          items: [...items, {
-            productId: product._id,
-            name:      product.name,
-            price,
-            image:     product.image || '',
-            quantity:  qty,
-          }],
+          items: items.map((i) =>
+            i.productId === product._id
+              ? { ...i, quantity: i.quantity + qty }
+              : i
+          ),
         };
-      });
-      return;
-    }
-
-    const res = await API.post("/cart/add", {
-      productId: product._id,
-      name:      product.name,
-      price,                        // ← always a number now
-      image:     product.image || '',
-      quantity:  qty,
+      }
+      return {
+        ...prev,
+        items: [...items, {
+          productId: product._id,
+          name: product.name,
+          price,
+          image: product.image || '',
+          quantity: qty,
+          prescriptionRequired, // ADD THIS
+        }],
+      };
     });
-    setCart(res.data);
-  };
+    return;
+  }
+
+  const res = await API.post("/cart/add", {
+    productId: product._id,
+    name: product.name,
+    price,
+    image: product.image || '',
+    quantity: qty,
+    prescriptionRequired, // ADD THIS
+  });
+  setCart(res.data);
+};
 
   const removeFromCart = async (productId) => {
     const token = localStorage.getItem("token");

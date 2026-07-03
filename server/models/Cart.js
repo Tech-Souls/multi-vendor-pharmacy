@@ -20,7 +20,8 @@ const cartSchema = new mongoose.Schema({
         type: Number,
         default: 1,
         min: 1
-      }
+      },
+      prescriptionRequired: { type: Boolean, default: false },
     }
   ],
   totalAmount: {
