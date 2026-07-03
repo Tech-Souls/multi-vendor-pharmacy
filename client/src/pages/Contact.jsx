@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Mail, Phone, MapPin, Clock, ShieldCheck, Send, Sparkles, MessageCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
@@ -20,26 +20,6 @@ export default function ContactUs() {
     message: ''
   });
   const [sending, setSending] = useState(false);
-  const [contactSettings, setContactSettings] = useState(null);
-  const [loadingSettings, setLoadingSettings] = useState(true);
-
-  // Fetch contact settings on component mount
-  useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const response = await API.get('/contact-settings');
-        if (response.data) {
-          setContactSettings(response.data.data);
-        }
-      } catch (error) {
-        console.error('Error fetching settings:', error);
-      } finally {
-        setLoadingSettings(false);
-      }
-    };
-
-    fetchSettings();
-  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -75,70 +55,14 @@ export default function ContactUs() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // Default values while loading or if settings not available
-  const defaultSettings = {
-    pharmacyName: 'Time Pharmacy',
-    address: '[Insert Registered Business Address Details]',
-    country: 'United Kingdom',
-    gphcPremisesNo: 'GPhC Premises No: 9010453',
-    operatingHours: 'Monday – Friday: 09:00 to 18:00',
-    weekendHours: 'Saturday – Sunday: Closed',
-    pomCutoff: 'POM Cut-off: 15:00 for same-day dispatch',
-    phoneNumber: '+44 (0) 20 0000 0000',
-    phoneBadge: 'Clinical queries / Prescriber validation desk',
-    email: 'support@drgpharma.com',
-    emailBadge: 'Submit scanned manual Rx forms here'
-  };
-
-  const settings = contactSettings || defaultSettings;
-
-  // Contact information array with dynamic data
-  const contactInfo = [
-    {
-      icon: MapPin,
-      title: "Registered Dispensary",
-      details: (
-        <>
-          {settings.pharmacyName}<br />
-          {settings.address}<br />
-          {settings.country}
-        </>
-      ),
-      badge: settings.gphcPremisesNo
-    },
-    {
-      icon: Clock,
-      title: "Operational Hours",
-      details: (
-        <>
-          {settings.operatingHours}<br />
-          {settings.weekendHours}
-        </>
-      ),
-      badge: settings.pomCutoff
-    },
-    {
-      icon: Phone,
-      title: "Direct Phone Lines",
-      details: settings.phoneNumber,
-      badge: settings.phoneBadge
-    },
-    {
-      icon: Mail,
-      title: "Email Channels",
-      details: settings.email,
-      badge: settings.emailBadge
-    }
-  ];
-
   return (
     <div className="bg-white text-slate-900 min-h-screen" style={{ fontFamily: "'DM Sans','Segoe UI',sans-serif" }}>
 
       {/* HERO SECTION with Background Image */}
-      <section className="relative min-h-[400px] sm:min-h-[450px] md:min-h-[500px] flex items-center overflow-hidden">
+      <section className="relative h-[478px] sm:h-[528px] md:h-[578px] flex items-center overflow-hidden">
         <div className="absolute inset-0">
           <img
-            src="https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=1600&q=80"
+            src="./contact.jpg"
             alt="Contact our pharmacy team"
             className="w-full h-full object-fill"
           />
@@ -146,7 +70,7 @@ export default function ContactUs() {
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900/50 via-transparent to-transparent" />
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 relative z-10">
+        <div className="max-w-7xl px-4 sm:px-6 lg:px-8 py-16 sm:py-20 relative z-10 md:ml-[100px]">
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 bg-teal-500/20 backdrop-blur-sm border border-teal-400/30 rounded-full px-4 py-1.5 mb-6">
               <MessageCircle className="w-4 h-4 text-teal-400" />
@@ -196,9 +120,45 @@ export default function ContactUs() {
               </p>
             </div>
 
-            {/* Contact Cards - Now using dynamic data */}
+            {/* Contact Cards */}
             <div className="space-y-4">
-              {contactInfo.map((item, idx) => (
+              {[
+                {
+                  icon: MapPin,
+                  title: "Registered Dispensary",
+                  details: (
+                    <>
+                      Time Pharmacy<br />
+                      [Insert Registered Business Address Details]<br />
+                      United Kingdom
+                    </>
+                  ),
+                  badge: "GPhC Premises No: 9010453"
+                },
+                {
+                  icon: Clock,
+                  title: "Operational Hours",
+                  details: (
+                    <>
+                      Monday – Friday: 09:00 to 18:00<br />
+                      Saturday – Sunday: Closed
+                    </>
+                  ),
+                  badge: "POM Cut-off: 15:00 for same-day dispatch"
+                },
+                {
+                  icon: Phone,
+                  title: "Direct Phone Lines",
+                  details: "+44 (0) 20 0000 0000",
+                  badge: "Clinical queries / Prescriber validation desk"
+                },
+                {
+                  icon: Mail,
+                  title: "Email Channels",
+                  details: "support@drgpharma.com",
+                  badge: "Submit scanned manual Rx forms here"
+                }
+              ].map((item, idx) => (
                 <div key={idx} className="flex gap-4 p-4 bg-white border border-slate-200 rounded-2xl hover:shadow-md transition-all hover:border-teal-200">
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-50 to-teal-100 flex items-center justify-center text-teal-700 shrink-0">
                     <item.icon className="w-5 h-5" />

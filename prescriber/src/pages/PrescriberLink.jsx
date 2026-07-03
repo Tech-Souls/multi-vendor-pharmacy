@@ -35,14 +35,14 @@ const Card = ({ icon: Icon, title, children }) => (
 
 const PrescriberLink = () => {
   const navigate = useNavigate();
-  const [loading,           setLoading]           = useState(false);
-  const [searching,         setSearching]          = useState(false);
-  const [searchResults,     setSearchResults]      = useState([]);
-  const [activePrescribers, setActivePrescribers]  = useState([]);
-  const [selectedName,      setSelectedName]       = useState('');
-  const [productQuery,      setProductQuery]       = useState('');
-  const [availableProducts, setAvailableProducts]  = useState([]);
-  const [selectedProducts,  setSelectedProducts]   = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [searching, setSearching] = useState(false);
+  const [searchResults, setSearchResults] = useState([]);
+  const [activePrescribers, setActivePrescribers] = useState([]);
+  const [selectedName, setSelectedName] = useState('');
+  const [productQuery, setProductQuery] = useState('');
+  const [availableProducts, setAvailableProducts] = useState([]);
+  const [selectedProducts, setSelectedProducts] = useState([]);
 
   const [linkData, setLinkData] = useState({
     prescriberId: '', registrationNumber: '',
@@ -55,7 +55,7 @@ const PrescriberLink = () => {
     treatment: 'Dermal Fillers', clinicalNotes: '',
   });
 
-  const token   = () => localStorage.getItem('token');
+  const token = () => localStorage.getItem('token');
   const headers = () => ({ Authorization: `Bearer ${token()}` });
 
   useEffect(() => { fetchActiveLinks(); }, []);
@@ -97,15 +97,15 @@ const PrescriberLink = () => {
   };
 
   const handleLinkRequest = async () => {
-    if (!linkData.prescriberId)       return toast.error('Select a prescriber');
+    if (!linkData.prescriberId) return toast.error('Select a prescriber');
     if (!linkData.registrationNumber) return toast.error('Enter registration number');
     setLoading(true);
     try {
       await axios.post(`${BASE}/api/prescriber-link/link`, {
-        prescriberId:       linkData.prescriberId,
-        requesterRole:      linkData.role,
+        prescriberId: linkData.prescriberId,
+        requesterRole: linkData.role,
         registrationNumber: linkData.registrationNumber,
-        message:            linkData.message,
+        message: linkData.message,
       }, { headers: headers() });
       toast.success('Link request sent!');
       setLinkData({ prescriberId: '', registrationNumber: '', role: 'Aesthetic nurse non-prescriber', message: '' });
@@ -122,13 +122,13 @@ const PrescriberLink = () => {
     setLoading(true);
     try {
       await axios.post(`${BASE}/api/prescriber-link/request-prescription`, {
-        prescriberId:     requestData.prescriberId,
+        prescriberId: requestData.prescriberId,
         patientFirstName: requestData.patientFirstName,
-        patientLastName:  requestData.patientLastName,
-        dob:              requestData.dob,
+        patientLastName: requestData.patientLastName,
+        dob: requestData.dob,
         consultationDate: requestData.consultationDate,
-        treatment:        requestData.treatment,
-        clinicalNotes:    requestData.clinicalNotes,
+        treatment: requestData.treatment,
+        clinicalNotes: requestData.clinicalNotes,
         productsRequired: selectedProducts.map(p => p._id),
       }, { headers: headers() });
       toast.success('Submitted to prescriber!');
@@ -248,11 +248,23 @@ const PrescriberLink = () => {
                   value={requestData.prescriberId}
                   onChange={e => setRequestData(p => ({ ...p, prescriberId: e.target.value }))}>
                   <option value="">— Select linked professional —</option>
-                  {activePrescribers.map(link => (
-                    <option key={link._id} value={link.prescriberId?._id}>
-                      {link.prescriberId?.name}{link.status === 'pending' ? ' (Pending)' : ''}
-                    </option>
-                  ))}
+                  {activePrescribers.map(link => {
+                    const prescriberUser = link.prescriberId; // ye populated User object hai
+                    const id = prescriberUser?._id || '';   // MongoDB _id use karo yahan
+                    const name = prescriberUser?.name ||
+                      `${prescriberUser?.firstName || ''} ${prescriberUser?.lastName || ''}`.trim() ||
+                      'Unknown';
+
+                    return (
+                      <option
+                        key={link._id}
+                        value={id}
+                        disabled={link.status === 'pending'}
+                      >
+                        {name} {link.status === 'pending' ? '(Pending approval)' : ''}
+                      </option>
+                    );
+                  })}
                 </select>
                 {activePrescribers.length === 0 && (
                   <p className="text-[10px] text-amber-500 font-semibold flex items-center gap-1 mt-1.5">

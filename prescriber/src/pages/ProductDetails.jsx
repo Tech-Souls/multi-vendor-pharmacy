@@ -184,7 +184,7 @@ const ProductDetails = () => {
                       product.stock > 0 ? 'Low Stock' : 'Out of Stock'}
                   </span>
                 </div>
-                <p className="text-xs text-gray-400">{product.stock} units available</p>
+                <p className="text-xs text-gray-700">{product.stock} units available</p>
               </div>
             </div>
 
@@ -203,6 +203,24 @@ const ProductDetails = () => {
                 <span className="text-xs font-medium text-gray-600">{value}</span>
               </div>
             ))}
+
+            {/* How To Use & Safety Information */}
+            {(product.howToUse || product.safetyInfo) && (
+              <div className="space-y-4 pt-1 border-t border-gray-100">
+                {product.howToUse && (
+                  <div>
+                    <p className="text-1xl font-bold uppercase tracking-widest text-slate-900 mb-2 ">How To Use</p>
+                    <p className="text-sm text-gray-600 leading-relaxed">{product.howToUse}</p>
+                  </div>
+                )}
+                {product.safetyInfo && (
+                  <div>
+                    <p className="text-1xl font-bold uppercase tracking-widest text-slate-900 mb-2">Safety & Warnings</p>
+                    <p className="text-sm text-gray-600 leading-relaxed">{product.safetyInfo}</p>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* ── Rx Flow ── */}
             {isRx ? (
@@ -226,16 +244,12 @@ const ProductDetails = () => {
                 <button
                   onClick={async () => {
                     setAdding(true);
-
                     try {
                       await addToCart({ ...product, quantity });
-
                       toast.success('Prescription is required for this product');
-
                       setTimeout(() => {
                         navigate('/prescriptions');
                       }, 1500);
-
                     } catch {
                       toast.error('Failed to add to cart');
                     } finally {
@@ -250,7 +264,6 @@ const ProductDetails = () => {
                   ) : (
                     <ShoppingCart size={14} />
                   )}
-
                   Add to Cart
                 </button>
               </div>
@@ -268,7 +281,7 @@ const ProductDetails = () => {
                       <Plus size={13} />
                     </button>
                   </div>
-                  <span className="text-xs text-gray-300">{product.stock} available</span>
+                  <span className="text-xs text-gray-800">{product.stock} available</span>
                 </div>
 
                 <button
@@ -289,32 +302,8 @@ const ProductDetails = () => {
                 </button>
               </div>
             )}
-
-            {/* Safety */}
-            {product.safetyInfo && (
-              <div className="flex items-start gap-2 pt-3 border-t border-gray-50">
-                <Shield size={13} className="text-gray-300 mt-0.5 shrink-0" />
-                <p className="text-xs text-gray-400 leading-relaxed">{product.safetyInfo}</p>
-              </div>
-            )}
           </div>
         </div>
-
-        {/* How To Use */}
-        {product.howToUse && (
-          <div className="mt-14 pt-10 border-t border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-10">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-gray-300 mb-3">How To Use</p>
-              <p className="text-sm text-gray-600 leading-relaxed">{product.howToUse}</p>
-            </div>
-            {product.safetyInfo && (
-              <div>
-                <p className="text-xs font-bold uppercase tracking-widest text-gray-300 mb-3">Safety & Warnings</p>
-                <p className="text-sm text-gray-600 leading-relaxed">{product.safetyInfo}</p>
-              </div>
-            )}
-          </div>
-        )}
       </div>
     </div>
   );

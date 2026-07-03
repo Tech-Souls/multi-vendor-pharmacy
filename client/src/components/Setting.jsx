@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Header from './Header';
 import toast from 'react-hot-toast';
-import { Mail, Trash2, RefreshCw, X, Settings, Phone, Building, Save } from 'lucide-react';
+import { Mail, Trash2, RefreshCw, X } from 'lucide-react';
 import API from '../api/axios';
 
 const Setting = () => {
@@ -18,33 +18,16 @@ const Setting = () => {
     delivery: '5.00',
   });
 
-  const [contactSettings, setContactSettings] = useState({
-    pharmacyName: '',
-    address: '',
-    country: '',
-    gphcPremisesNo: '',
-    operatingHours: '',
-    weekendHours: '',
-    pomCutoff: '',
-    phoneNumber: '',
-    phoneBadge: '',
-    email: '',
-    emailBadge: ''
-  });
-
   const [savingPharmacy, setSavingPharmacy] = useState(false);
   const [savingFinancial, setSavingFinancial] = useState(false);
-  const [savingContact, setSavingContact] = useState(false);
-  const [loadingContact, setLoadingContact] = useState(false);
   const [contacts, setContacts] = useState([]);
   const [loadingContacts, setLoadingContacts] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
-  const [activeTab, setActiveTab] = useState('contact');
 
+  // Fetch contacts on load
   useEffect(() => {
     fetchContacts();
-    fetchContactSettings();
   }, []);
 
   const fetchContacts = async () => {
@@ -58,35 +41,6 @@ const Setting = () => {
       toast.error('Failed to fetch messages');
     } finally {
       setLoadingContacts(false);
-    }
-  };
-
-  const fetchContactSettings = async () => {
-    setLoadingContact(true);
-    try {
-      const response = await API.get('/contact-settings');
-      if (response.data) {
-        setContactSettings(response.data.data);
-      }
-    } catch (error) {
-      toast.error('Failed to fetch contact settings');
-    } finally {
-      setLoadingContact(false);
-    }
-  };
-
-  const handleSaveContactSettings = async () => {
-    setSavingContact(true);
-    try {
-      const response = await API.put('/contact-settings', contactSettings);
-      if (response.data) {
-        toast.success('Contact settings saved successfully');
-        setContactSettings(response.data.data);
-      }
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to save settings');
-    } finally {
-      setSavingContact(false);
     }
   };
 
@@ -133,215 +87,51 @@ const Setting = () => {
       <Header title="Settings" />
       <div className="p-6 max-w-7xl mx-auto">
 
+        {/* Title Section */}
         <div className="mb-8 border-b border-blue-50 pb-4">
           <h1 className="text-xl font-bold flex items-center gap-2">
             System Settings
           </h1>
           <p className="text-blue-450 text-md mt-1">
-            Configure pharmacy settings and manage communications
+            Configure pharmacy identity and financial parameters <br /> for automated commission calculation.
           </p>
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-2 mb-6 border-b border-blue-50 overflow-x-auto">
-          <button
-            onClick={() => setActiveTab('contact')}
-            className={`px-4 py-2 text-sm font-medium transition whitespace-nowrap ${activeTab === 'contact'
-                ? 'text-blue-900 border-b-2 border-blue-900'
-                : 'text-blue-400 hover:text-blue-600'
-              }`}
-          >
-            Contact Settings
-          </button>
-          <button
-            onClick={() => setActiveTab('financial')}
-            className={`px-4 py-2 text-sm font-medium transition whitespace-nowrap ${activeTab === 'financial'
-                ? 'text-blue-900 border-b-2 border-blue-900'
-                : 'text-blue-400 hover:text-blue-600'
-              }`}
-          >
-            Financial Rules
-          </button>
-          <button
-            onClick={() => setActiveTab('messages')}
-            className={`px-4 py-2 text-sm font-medium transition whitespace-nowrap flex items-center gap-1 ${activeTab === 'messages'
-                ? 'text-blue-900 border-b-2 border-blue-900'
-                : 'text-blue-400 hover:text-blue-600'
-              }`}
-          >
-            Messages <span className="bg-blue-100 text-blue-600 text-xs px-2 py-0.5 rounded-full">{contacts.length}</span>
-          </button>
-        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
 
-        {/* Contact Settings Tab */}
-        {activeTab === 'contact' && (
+          {/* Pharmacy Details */}
           <div className="border border-blue-100 rounded-xl p-6 shadow-sm">
             <div className="flex items-center gap-2 mb-6">
-              <Settings className="w-5 h-5 text-blue-600" />
-              <h2 className="text-md font-bold uppercase tracking-widest text-blue-550">Contact Page Settings</h2>
+              <h2 className="text-md font-bold uppercase tracking-widest text-blue-550">Pharmacy Details</h2>
             </div>
-
-            {loadingContact ? (
-              <div className="text-center py-8 text-blue-400">Loading settings...</div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <h3 className="text-sm font-bold text-blue-600 uppercase flex items-center gap-2">
-                    <Building className="w-4 h-4" />
-                    Pharmacy Information
-                  </h3>
-
-                  <div>
-                    <label className="block text-xs font-bold text-blue-500 uppercase mb-1">Pharmacy Name</label>
-                    <input
-                      type="text"
-                      value={contactSettings.pharmacyName || ''}
-                      onChange={(e) => setContactSettings({ ...contactSettings, pharmacyName: e.target.value })}
-                      className="w-full bg-white border border-blue-100 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 transition-colors"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-blue-500 uppercase mb-1">Address</label>
-                    <input
-                      type="text"
-                      value={contactSettings.address || ''}
-                      onChange={(e) => setContactSettings({ ...contactSettings, address: e.target.value })}
-                      className="w-full bg-white border border-blue-100 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 transition-colors"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-blue-500 uppercase mb-1">Country</label>
-                    <input
-                      type="text"
-                      value={contactSettings.country || ''}
-                      onChange={(e) => setContactSettings({ ...contactSettings, country: e.target.value })}
-                      className="w-full bg-white border border-blue-100 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 transition-colors"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-blue-500 uppercase mb-1">GPhC Premises No</label>
-                    <input
-                      type="text"
-                      value={contactSettings.gphcPremisesNo || ''}
-                      onChange={(e) => setContactSettings({ ...contactSettings, gphcPremisesNo: e.target.value })}
-                      className="w-full bg-white border border-blue-100 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 transition-colors"
-                    />
-                  </div>
+            <div className="space-y-4">
+              {[
+                { label: 'Pharmacy Name', key: 'name', type: 'text' },
+                { label: 'GPhC Registration', key: 'gphc', type: 'text' },
+                { label: 'Responsible Pharmacist', key: 'pharmacist', type: 'text', placeholder: 'Enter name' },
+              ].map((field) => (
+                <div key={field.key}>
+                  <label className="block text-[13px] font-bold text-blue-500 uppercase mb-1.5">{field.label}</label>
+                  <input
+                    type={field.type}
+                    value={pharmacyForm[field.key]}
+                    placeholder={field.placeholder}
+                    onChange={e => setPharmacyForm(f => ({ ...f, [field.key]: e.target.value }))}
+                    className="w-full bg-white border border-blue-100 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-blue-400 transition-colors"
+                  />
                 </div>
-
-                <div className="space-y-4">
-                  <h3 className="text-sm font-bold text-blue-600 uppercase flex items-center gap-2">
-                    <Phone className="w-4 h-4" />
-                    Contact Information
-                  </h3>
-
-                  <div>
-                    <label className="block text-xs font-bold text-blue-500 uppercase mb-1">Operating Hours</label>
-                    <input
-                      type="text"
-                      value={contactSettings.operatingHours || ''}
-                      onChange={(e) => setContactSettings({ ...contactSettings, operatingHours: e.target.value })}
-                      className="w-full bg-white border border-blue-100 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 transition-colors"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-blue-500 uppercase mb-1">Weekend Hours</label>
-                    <input
-                      type="text"
-                      value={contactSettings.weekendHours || ''}
-                      onChange={(e) => setContactSettings({ ...contactSettings, weekendHours: e.target.value })}
-                      className="w-full bg-white border border-blue-100 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 transition-colors"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-blue-500 uppercase mb-1">POM Cut-off</label>
-                    <input
-                      type="text"
-                      value={contactSettings.pomCutoff || ''}
-                      onChange={(e) => setContactSettings({ ...contactSettings, pomCutoff: e.target.value })}
-                      className="w-full bg-white border border-blue-100 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 transition-colors"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-blue-500 uppercase mb-1">Phone Number</label>
-                    <input
-                      type="text"
-                      value={contactSettings.phoneNumber || ''}
-                      onChange={(e) => setContactSettings({ ...contactSettings, phoneNumber: e.target.value })}
-                      className="w-full bg-white border border-blue-100 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 transition-colors"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-blue-500 uppercase mb-1">Phone Badge</label>
-                    <input
-                      type="text"
-                      value={contactSettings.phoneBadge || ''}
-                      onChange={(e) => setContactSettings({ ...contactSettings, phoneBadge: e.target.value })}
-                      className="w-full bg-white border border-blue-100 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 transition-colors"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-blue-500 uppercase mb-1">Email</label>
-                    <input
-                      type="text"
-                      value={contactSettings.email || ''}
-                      onChange={(e) => setContactSettings({ ...contactSettings, email: e.target.value })}
-                      className="w-full bg-white border border-blue-100 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 transition-colors"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-blue-500 uppercase mb-1">Email Badge</label>
-                    <input
-                      type="text"
-                      value={contactSettings.emailBadge || ''}
-                      onChange={(e) => setContactSettings({ ...contactSettings, emailBadge: e.target.value })}
-                      className="w-full bg-white border border-blue-100 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 transition-colors"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div className="flex gap-3 mt-6 pt-6 border-t border-blue-50">
+              ))}
               <button
-                onClick={handleSaveContactSettings}
-                disabled={savingContact}
-                className="px-6 py-3 bg-blue-900 text-white rounded-lg text-xs font-bold hover:bg-blue-800 transition disabled:opacity-50 flex items-center gap-2"
+                onClick={handleSavePharmacy}
+                disabled={savingPharmacy}
+                className="mt-2 px-6 py-3 bg-blue-900 text-white rounded-lg text-xs font-bold hover:bg-blue-800 transition disabled:opacity-50"
               >
-                <Save className="w-4 h-4" />
-                {savingContact ? 'Saving...' : 'Save Settings'}
-              </button>
-              <button
-                onClick={async () => {
-                  if (window.confirm('Reset all contact settings to default?')) {
-                    try {
-                      await API.delete('/contact-settings/reset');
-                      await fetchContactSettings();
-                      toast.success('Settings reset to default');
-                    } catch (error) {
-                      toast.error('Failed to reset settings');
-                    }
-                  }
-                }}
-                className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg text-xs font-bold hover:bg-gray-200 transition"
-              >
-                Reset to Default
+                {savingPharmacy ? 'Saving...' : 'Update Details'}
               </button>
             </div>
           </div>
-        )}
 
-        {/* Financial Rules Tab */}
-        {activeTab === 'financial' && (
+          {/* Three-Pot Financial Settings */}
           <div className="border border-blue-100 rounded-xl p-6 shadow-sm">
             <div className="flex items-center gap-2 mb-6">
               <h2 className="text-md font-bold uppercase tracking-widest text-blue-550">Financial Rules</h2>
@@ -355,7 +145,7 @@ const Setting = () => {
               </p>
             </div>
 
-            <div className="space-y-4 max-w-md">
+            <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-[13px] font-bold text-blue-500 uppercase mb-1.5">Payment Rate (%)</label>
@@ -403,11 +193,9 @@ const Setting = () => {
               </button>
             </div>
           </div>
-        )}
 
-        {/* Messages Tab */}
-        {activeTab === 'messages' && (
-          <div className="border border-blue-100 rounded-xl p-6 shadow-sm">
+          {/* Contact Messages Section */}
+          <div className="lg:col-span-2 border border-blue-100 rounded-xl p-6 shadow-sm">
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-md font-bold uppercase tracking-widest text-blue-550 flex items-center gap-2">
@@ -427,6 +215,7 @@ const Setting = () => {
               </button>
             </div>
 
+            {/* Contacts List */}
             {loadingContacts ? (
               <div className="text-center py-8 text-blue-400">Loading messages...</div>
             ) : contacts.length === 0 ? (
@@ -473,7 +262,25 @@ const Setting = () => {
               </div>
             )}
           </div>
-        )}
+
+          {/* Environment Info */}
+          <div className="lg:col-span-2 border border-blue-100 rounded-xl p-6 shadow-sm">
+            <h2 className="text-[14px] font-bold uppercase tracking-widest text-blue-550 mb-4">Environment Information</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {[
+                { label: 'API Endpoints', value: import.meta.env.VITE_API_URL || 'http://localhost:4000' },
+                { label: 'System Mode', value: import.meta.env.MODE || 'development' },
+                { label: 'Core Version', value: '1.0.0-stable' },
+              ].map((item, i) => (
+                <div key={i} className="bg-blue-50/20 border border-blue-50 rounded-lg p-3">
+                  <p className="text-[13px] font-bold uppercase text-blue-500 mb-1">{item.label}</p>
+                  <p className="text-xs font-medium text-blue-800 break-all">{item.value}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+        </div>
       </div>
 
       {/* Delete Confirmation Modal */}

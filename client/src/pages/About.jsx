@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { 
   ShieldCheck, 
   Scale, 
@@ -13,7 +13,6 @@ import {
   Package 
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import API from '../api/axios'
 
 const Eyebrow = ({ children }) => (
   <span className="inline-flex px-3.5 py-1 rounded-full text-xs font-bold text-teal-600 bg-teal-50 border border-teal-100 mb-4 tracking-wider uppercase">
@@ -23,51 +22,16 @@ const Eyebrow = ({ children }) => (
 
 export default function AboutUs() {
   const navigate = useNavigate();
-  const [contactSettings, setContactSettings] = useState(null);
-  const [loadingSettings, setLoadingSettings] = useState(true);
-
-  // Fetch contact settings on component mount
-  useEffect(() => {
-  const fetchSettings = async () => {
-    try {
-      const response = await API.get('/contact-settings');
-      if (response.data) {
-        setContactSettings(response.data.data);
-      }
-    } catch (error) {
-      console.error('Error fetching settings:', error);
-    } finally {
-      setLoadingSettings(false);
-    }
-  };
-
-  fetchSettings();
-}, []);
-
-  // Default values if settings not loaded
-  const defaultSettings = {
-    pharmacyName: 'Time Pharmacy',
-    pharmacyDisplayName: 'Healthcare Time Ltd t/a Time Pharmacy',
-    gphcPremisesNo: 'GPhC Premises No: 9010453',
-    address: '[Insert Registered Business Address Details]',
-    country: 'United Kingdom',
-    phoneNumber: '+44 (0) 20 0000 0000',
-    email: 'support@drgpharma.com',
-    operatingHours: 'Monday – Friday: 09:00 to 18:00',
-    weekendHours: 'Saturday – Sunday: Closed'
-  };
-
-  const settings = contactSettings || defaultSettings;
 
   return (
     <div className="bg-white text-slate-900 min-h-screen" style={{ fontFamily: "'DM Sans','Segoe UI',sans-serif" }}>
 
       {/* HERO SECTION with Background Image */}
-      <section className="relative min-h-[450px] sm:min-h-[500px] md:min-h-[550px] flex items-center overflow-hidden">
+      <section className="relative h-[478px] sm:h-[528px] md:h-[578px] flex items-center overflow-hidden">
         {/* Background Image with Overlay */}
         <div className="absolute inset-0">
           <img 
-            src="https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=1600&q=80" 
+            src="./about.jpg"
             alt="Modern pharmacy and medical clinic"
             className="w-full h-full object-fill"
           />
@@ -75,7 +39,7 @@ export default function AboutUs() {
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900/50 via-transparent to-transparent" />
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 relative z-10">
+        <div className="max-w-7xl px-4 sm:px-6 lg:px-8 py-16 sm:py-20 relative z-10 md:ml-[100px]">
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 bg-teal-500/20 backdrop-blur-sm border border-teal-400/30 rounded-full px-4 py-1.5 mb-6">
               <Sparkles className="w-4 h-4 text-teal-400" />
@@ -88,7 +52,7 @@ export default function AboutUs() {
             </h1>
             
             <p className="text-base sm:text-lg md:text-xl text-white/80 max-w-xl leading-relaxed">
-              DrGPharma provides dedicated technical interfaces and secure, tracked distribution for medical cosmetic injectors, operating in partnership with {settings.pharmacyName}.
+              DrGPharma provides dedicated technical interfaces and secure, tracked distribution for medical cosmetic injectors, operating in partnership with Time Pharmacy.
             </p>
 
             <div className="flex flex-wrap gap-3 mt-8">
@@ -117,8 +81,8 @@ export default function AboutUs() {
             <h2 
               className="font-serif text-3xl sm:text-4xl font-bold text-slate-900 mb-4"
             >
-              {settings.pharmacyDisplayName || 'Healthcare Time Ltd'} <br className="hidden sm:block" />
-              <span className="text-teal-600">t/a {settings.pharmacyName}</span>
+              Healthcare Time Ltd <br className="hidden sm:block" />
+              <span className="text-teal-600">t/a Time Pharmacy</span>
             </h2>
             <p className="text-sm text-slate-600 leading-relaxed mb-6">
               All prescription medications (POM) and medical consumables ordered via this platform are reviewed, validated, and dispensed under the strict oversight of our registered pharmacy premises.
@@ -131,7 +95,7 @@ export default function AboutUs() {
                 </div>
                 <div>
                   <span className="text-sm font-bold text-slate-900">GPhC Registered Premises</span>
-                  <p className="font-mono text-xs text-slate-400">{settings.gphcPremisesNo || 'Premises Registration Number: 9010453'}</p>
+                  <p className="font-mono text-xs text-slate-400">Premises Registration Number: 9010453</p>
                 </div>
               </div>
               <p className="text-xs text-slate-500 leading-relaxed pl-13">
@@ -182,7 +146,7 @@ export default function AboutUs() {
             {[
               { num: '229', label: 'Licensed products available', icon: Package },
               { num: '100%', label: 'FMD-compliant e-prescriptions', icon: ShieldCheck },
-              { num: 'GPhC', label: `Registered pharmacy: ${settings.gphcPremisesNo?.replace('GPhC Premises No: ', '') || '9010453'}`, icon: Award }
+              { num: 'GPhC', label: 'Registered pharmacy: 9010453', icon: Award }
             ].map((s, idx) => (
               <div key={idx} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all hover:border-teal-200">
                 <div className="flex items-center gap-3 mb-2">
@@ -248,30 +212,30 @@ export default function AboutUs() {
           <div>
             <Eyebrow>Visit Our Pharmacy</Eyebrow>
             <h3 className="font-serif text-2xl font-bold text-slate-900 mb-4">
-              {settings.pharmacyName} <span className="text-teal-600">Premises</span>
+              Time Pharmacy <span className="text-teal-600">Premises</span>
             </h3>
             <div className="space-y-3 text-sm text-slate-600">
               <div className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-teal-600 shrink-0 mt-0.5" />
                 <div>
-                  <p>{settings.pharmacyDisplayName || 'Healthcare Time Ltd'}</p>
-                  <p>t/a {settings.pharmacyName}</p>
-                  <p className="text-slate-400 text-xs mt-1">{settings.gphcPremisesNo || 'Registration Number: 9010453'}</p>
+                  <p>Healthcare Time Ltd</p>
+                  <p>t/a Time Pharmacy</p>
+                  <p className="text-slate-400 text-xs mt-1">Registration Number: 9010453</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <Phone className="w-5 h-5 text-teal-600 shrink-0" />
-                <span>{settings.phoneNumber || '+44 (0) 20 1234 5678'}</span>
+                <span>+44 (0) 20 1234 5678</span>
               </div>
               <div className="flex items-center gap-3">
                 <Mail className="w-5 h-5 text-teal-600 shrink-0" />
-                <span>{settings.email || 'pharmacy@drgpharma.co.uk'}</span>
+                <span>pharmacy@drgpharma.co.uk</span>
               </div>
               <div className="flex items-start gap-3">
                 <Clock className="w-5 h-5 text-teal-600 shrink-0 mt-0.5" />
                 <div>
-                  <p>{settings.operatingHours || 'Monday - Friday: 9:00 AM - 6:00 PM'}</p>
-                  <p className="text-slate-400 text-xs">{settings.weekendHours || 'Saturday: 10:00 AM - 2:00 PM'}</p>
+                  <p>Monday - Friday: 9:00 AM - 6:00 PM</p>
+                  <p className="text-slate-400 text-xs">Saturday: 10:00 AM - 2:00 PM</p>
                 </div>
               </div>
             </div>

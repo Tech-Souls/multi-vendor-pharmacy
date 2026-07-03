@@ -23,7 +23,7 @@ import Skincare from './pages/Skincare';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import PrescriberData from './pages/PrescriberData';
-import ForgotPassword from './pages/ForgotPassword'
+import ForgotPassword from './pages/ForgotPassword';
 
 import './App.css';
 
