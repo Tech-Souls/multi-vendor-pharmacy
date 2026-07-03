@@ -6,7 +6,8 @@ import {
   checkUserPrescriptionStatus,
   submitPrescription,
   getMyPrescriptions,
-  deletePrescription
+  deletePrescription,
+  getPrescriptionById  // 👈 ADD THIS
 } from "../controllers/prescription.controller.js";
 import upload from "../middleware/multer.js";
 import { protect, staffOnly } from "../middleware/authMiddleware.js";
@@ -26,11 +27,11 @@ router.post("/submit",              protect,           submitPrescription);
 router.post("/upload",              protect,           upload.single("image"), uploadPrescription);
 router.get("/status/:medicineId",   protect,           checkUserPrescriptionStatus);
 router.get('/my', protect, getMyPrescriptions);
+router.get('/:id', protect, getPrescriptionById); // 👈 ADD THIS - must be after '/my' to avoid conflict
 
 // Staff only (admin or prescriber)
 router.get("/pending",              ...staffOnly,      getPendingPrescriptions);
 router.patch("/verify/:id",         ...staffOnly,      verifyPrescription);
-
 router.delete('/:id', protect, deletePrescription);
 
 export default router;

@@ -160,3 +160,31 @@ export const deletePrescription = async (req, res) => {
     res.status(500).json({ message: 'Failed to delete prescription' });
   }
 };
+
+// prescription detail
+export const getPrescriptionById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const prescription = await Prescription.findById(id)
+      .populate('user', 'firstName lastName email')
+      .populate('medications', 'name brand dosage price')
+      .populate('medicine', 'name brand dosage price');
+    
+    if (!prescription) {
+      return res.status(404).json({ message: 'Prescription not found' });
+    }
+    
+    // Check if user is authorized to view this prescription
+    if (prescription.user._id.toString() !== req.user._id.toString() && 
+        req.user.role !== 'admin' && 
+        req.user.role !== 'staff') {
+      return res.status(403).json({ message: 'Not authorized to view this prescription' });
+    }
+    
+    res.status(200).json(prescription);
+  } catch (error) {
+    console.error('Error fetching prescription:', error);
+    res.status(500).json({ message: 'Failed to fetch prescription' });
+  }
+};
