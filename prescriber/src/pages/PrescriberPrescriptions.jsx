@@ -96,16 +96,19 @@ const PrescriberPrescriptions = () => {
     }
   };
 
-  const handleStatusUpdate = async (prescriptionId, status) => {
-    try {
-      await API.patch(`/prescriptions/verify/${prescriptionId}`, { status });
-      setPrescriptions(prev => prev.map(p => p._id === prescriptionId ? { ...p, status } : p));
-      toast.success(`Prescription ${status}`);
-    } catch (error) {
-      console.error('Failed to update status:', error);
-      toast.error(error.response?.data?.message || 'Unable to update prescription status');
-    }
-  };
+ const handleStatusUpdate = async (prescriptionId, status) => {
+  try {
+    // ✅ prescriber-link route use karo
+    await API.patch(`/prescriber-link/verify-request/${prescriptionId}`, { status });
+    setPrescriptions(prev => prev.map(p => 
+      p._id === prescriptionId ? { ...p, status } : p
+    ));
+    toast.success(`Prescription ${status}`);
+  } catch (error) {
+    console.error('Failed to update status:', error);
+    toast.error(error.response?.data?.message || 'Unable to update');
+  }
+};
 
   const handleViewPrescription = (id) => {
     // Navigate to dashboard with prescriptionId param
@@ -145,9 +148,8 @@ const PrescriberPrescriptions = () => {
           <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
             {statuses.map(s => (
               <button key={s} onClick={() => setFilter(s)}
-                className={`px-3 py-2 rounded-xl text-xs font-semibold whitespace-nowrap capitalize transition-all ${
-                  filter === s ? 'bg-slate-800 text-white' : 'bg-white border border-slate-200 text-slate-500 hover:border-slate-400'
-                }`}>
+                className={`px-3 py-2 rounded-xl text-xs font-semibold whitespace-nowrap capitalize transition-all ${filter === s ? 'bg-slate-800 text-white' : 'bg-white border border-slate-200 text-slate-500 hover:border-slate-400'
+                  }`}>
                 {s}
               </button>
             ))}
@@ -199,9 +201,8 @@ const PrescriberPrescriptions = () => {
                       {p.treatment || p.method || '—'}
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border capitalize ${
-                        statusConfig[p.status] || 'bg-slate-50 text-slate-500 border-slate-200'
-                      }`}>
+                      <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border capitalize ${statusConfig[p.status] || 'bg-slate-50 text-slate-500 border-slate-200'
+                        }`}>
                         {p.status || 'unknown'}
                       </span>
                     </td>

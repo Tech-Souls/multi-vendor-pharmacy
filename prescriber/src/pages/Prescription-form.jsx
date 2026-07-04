@@ -6,11 +6,12 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 
 // ✅ Outside component — no re-render on keystroke
-const inputCls  = 'w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-black placeholder:text-gray-300 outline-none focus:border-black transition-all font-medium';
+const inputCls = 'w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-black placeholder:text-gray-300 outline-none focus:border-black transition-all font-medium';
 const selectCls = `${inputCls} cursor-pointer`;
-const labelCls  = 'text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1.5 block';
+const labelCls = 'text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1.5 block';
 
 const Field = ({ label, children }) => (
   <div className="flex flex-col">
@@ -33,11 +34,11 @@ const Card = ({ icon: Icon, title, children }) => (
 
 const PrescriptionForm = () => {
   const navigate = useNavigate();
-  const [submitting,       setSubmitting]       = useState(false);
-  const [searchQuery,      setSearchQuery]      = useState('');
-  const [searchResults,    setSearchResults]    = useState([]);
-  const [searching,        setSearching]        = useState(false);
-  const [allMedicines,     setAllMedicines]     = useState([]);
+  const [submitting, setSubmitting] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [searching, setSearching] = useState(false);
+  const [allMedicines, setAllMedicines] = useState([]);
   const [medicinesFetched, setMedicinesFetched] = useState(false);
 
   const initialState = {
@@ -60,9 +61,26 @@ const PrescriptionForm = () => {
 
   const [formData, setFormData] = useState(initialState);
 
-  const handlePatientChange    = (f, v) => setFormData(p => ({ ...p, patient:    { ...p.patient,    [f]: v } }));
+  const handlePatientChange = (f, v) => setFormData(p => ({ ...p, patient: { ...p.patient, [f]: v } }));
   const handlePrescriberChange = (f, v) => setFormData(p => ({ ...p, prescriber: { ...p.prescriber, [f]: v } }));
-  const handleDeliveryChange   = (f, v) => setFormData(p => ({ ...p, delivery:   { ...p.delivery,   [f]: v } }));
+  const handleDeliveryChange = (f, v) => setFormData(p => ({ ...p, delivery: { ...p.delivery, [f]: v } }));
+
+  // State add karo
+  const [prescribers, setPrescribers] = useState([]);
+  const [showPrescribers, setShowPrescribers] = useState(false);
+
+  // Fetch karo
+  useEffect(() => {
+    const fetchPrescribers = async () => {
+      try {
+        const { data } = await API.get('/users/prescribers');
+        setPrescribers(data.prescribers || []);
+      } catch (err) {
+        console.error('Failed to fetch prescribers:', err);
+      }
+    };
+    fetchPrescribers();
+  }, []);
 
   const handleSearch = async (query) => {
     setSearchQuery(query);
@@ -101,10 +119,10 @@ const PrescriptionForm = () => {
     try {
       await API.post('/prescriptions/submit', {
         // ✅ FIX: send as "patient" which backend maps to patientDetails
-        patient:    formData.patient,
+        patient: formData.patient,
         prescriber: formData.prescriber,
         medications: formData.medications.map(m => m._id),
-        method:     'form',
+        method: 'form',
       });
       toast.success('Prescription submitted!');
       setFormData(initialState);
@@ -204,6 +222,68 @@ const PrescriptionForm = () => {
 
             <Card icon={Stethoscope} title="Prescriber Details">
               <div className="space-y-3">
+
+                {/* available prescribers */}
+                <div className="mb-3">
+                <button
+                  type="button"
+                  onClick={() => setShowPrescribers(!showPrescribers)}
+                  className="text-[10px] font-bold uppercase tracking-widest text-blue-500 hover:text-blue-700 transition-colors"
+                >
+                  {showPrescribers ? 'Hide' : 'View Available Prescribers'}
+                </button>
+
+                {showPrescribers && (
+                  <div className="mt-2 border border-gray-100 rounded-xl overflow-hidden">
+                    <table className="w-full text-xs">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="text-left px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Name</th>
+                          <th className="text-left px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Reg No</th>
+                          <th className="text-left px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Role</th>
+                          <th className="text-left px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Speciality</th>
+                          <th className="px-3 py-2"></th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-50">
+                        {prescribers.length === 0 ? (
+                          <tr>
+                            <td colSpan={5} className="px-3 py-4 text-center text-gray-300 text-xs">
+                              No prescribers available
+                            </td>
+                          </tr>
+                        ) : (
+                          prescribers.map(p => (
+                            <tr key={p._id} className="hover:bg-gray-50 transition-colors">
+                              <td className="px-3 py-2 font-semibold text-black">{p.name}</td>
+                              <td className="px-3 py-2 text-gray-500 font-mono">{p.registrationNumber}</td>
+                              <td className="px-3 py-2 text-gray-500">{p.professionalRole}</td>
+                              <td className="px-3 py-2 text-gray-500">{p.primarySpeciality}</td>
+                              <td className="px-3 py-2">
+                                {/* ✅ Click karo toh auto-fill ho */}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    handlePrescriberChange('name', p.name);
+                                    handlePrescriberChange('regNumber', p.registrationNumber);
+                                    handlePrescriberChange('type', p.professionalRole || 'Doctor');
+                                    handlePrescriberChange('clinicName', p.practiceName || '');
+                                    setShowPrescribers(false);
+                                  }}
+                                  className="text-[10px] font-bold text-blue-500 hover:text-blue-700 px-2 py-1 bg-blue-50 rounded-lg transition-colors"
+                                >
+                                  Select
+                                </button>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+
                 <Field label="Full Name">
                   <input className={inputCls} placeholder="Dr. Sarah Connor" required
                     value={formData.prescriber.name}

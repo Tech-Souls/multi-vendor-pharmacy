@@ -126,27 +126,29 @@ export const getMyPatients = async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
 
-    const prescriptions = await Prescription.find({ 
-      verifiedBy: userId
+    // PrescriptionRequest se — jo is prescriber ko bheja gaya
+    const requests = await PrescriptionRequest.find({
+      prescriberId: userId,
+      status: 'approved' // sirf approved wale patients dikhao
     })
-      .populate("user", "firstName lastName email phoneNumber address dob")
-      .sort({ createdAt: -1 });
+    .populate('requesterId', 'firstName lastName email phoneNumber address dob')
+    .sort({ createdAt: -1 });
 
     const seen = new Set();
-    const patients = prescriptions.map((item) => {
-      const user = item.user;
+    const patients = requests.map((item) => {
+      const user = item.requesterId;
       const id = user?._id?.toString() || item._id.toString();
       if (seen.has(id)) return null;
       seen.add(id);
       return {
         _id:           id,
-        firstName:     item.patientDetails?.firstName || user?.firstName || "",
-        lastName:      item.patientDetails?.lastName  || user?.lastName  || "",
-        dob:           item.patientDetails?.dob       || user?.dob       || "",
-        personalEmail: item.patientDetails?.email     || user?.email     || "",
-        mobileNumber:  item.patientDetails?.phone     || user?.phoneNumber || "",
-        addressLine1:  item.patientDetails?.address   || user?.address   || "",
-        status:        item.status || "pending",
+        firstName:     item.patientName?.firstName || user?.firstName || "",
+        lastName:      item.patientName?.lastName  || user?.lastName  || "",
+        dob:           item.dob        || user?.dob        || "",
+        personalEmail: user?.email     || "",
+        mobileNumber:  user?.phoneNumber || "",
+        addressLine1:  user?.address   || "",
+        status:        item.status     || "pending",
         lastRequestedAt: item.createdAt,
       };
     }).filter(Boolean);
