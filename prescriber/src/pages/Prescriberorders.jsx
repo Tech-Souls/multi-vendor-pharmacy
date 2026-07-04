@@ -14,6 +14,15 @@ const statusConfig = {
 
 const fmt = (n) => `£${parseFloat(n || 0).toFixed(2)}`;
 
+// Per-unit selling price is stored in `unitRevenueExVat`.
+const getUnitPrice = (item) => Number(item.unitRevenueExVat ?? item.price ?? 0);
+
+// Order total: use financials.revenueExVat, else sum the line items.
+const getOrderTotal = (order) => {
+  if (order.financials?.revenueExVat != null) return Number(order.financials.revenueExVat);
+  return (order.items || []).reduce((a, i) => a + getUnitPrice(i) * (i.quantity || 1), 0);
+};
+
 const PrescriberOrders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -23,7 +32,6 @@ const PrescriberOrders = () => {
   useEffect(() => {
     API.get('/orders/my')
       .then(res => {
-        // Handle varying API response formats
         const data = res.data.orders || (Array.isArray(res.data) ? res.data : []);
         setOrders(data);
       })
@@ -35,11 +43,10 @@ const PrescriberOrders = () => {
 
   const filtered = orders.filter(o => {
     const matchFilter = filter === 'all' || o.status === filter;
-    // Enhanced search: checks Order ID or any product name within the items array
     const searchLower = search.toLowerCase();
-    const matchSearch = !search || 
-      o._id?.toLowerCase().includes(searchLower) || 
-      o.items?.some(i => (i.name || i.medicineId?.name || '').toLowerCase().includes(searchLower));
+    const matchSearch = !search ||
+      o._id?.toLowerCase().includes(searchLower) ||
+      o.items?.some(i => (i.productName || i.name || '').toLowerCase().includes(searchLower));
     return matchFilter && matchSearch;
   });
 
@@ -88,8 +95,8 @@ const PrescriberOrders = () => {
             {filtered.map(order => {
               const cfg = statusConfig[order.status] || statusConfig.pending;
               const Icon = cfg.icon;
-              const total = order.items?.reduce((a, i) => a + ((i.price || 0) * (i.quantity || 1)), 0) || 0;
-              
+              const total = getOrderTotal(order);
+
               return (
                 <div key={order._id} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 hover:shadow-md transition-all">
                   <div className="flex items-start justify-between gap-4">
@@ -115,17 +122,21 @@ const PrescriberOrders = () => {
                   {/* Items List */}
                   {order.items?.length > 0 && (
                     <div className="mt-5 pt-4 border-t border-slate-50 space-y-2">
-                      {order.items.map((item, idx) => (
-                        <div key={idx} className="flex justify-between items-center text-xs">
-                          <span className="text-slate-600 font-medium truncate pr-4">
-                            {item.name || item.productName || item.medicineId?.name || 'Unknown Item'}
-                            <span className="text-slate-400 ml-2">×{item.quantity}</span>
-                          </span>
-                          <span className="text-slate-700 font-semibold tabular-nums">
-                            {fmt((item.price || 0) * (item.quantity || 1))}
-                          </span>
-                        </div>
-                      ))}
+                      {order.items.map((item, idx) => {
+                        const unit = getUnitPrice(item);
+                        const qty  = item.quantity || 1;
+                        return (
+                          <div key={idx} className="flex justify-between items-center text-xs">
+                            <span className="text-slate-600 font-medium truncate pr-4">
+                              {item.productName || item.name || item.medicineId?.name || 'Unknown Item'}
+                              <span className="text-slate-400 ml-2">×{qty}</span>
+                            </span>
+                            <span className="text-slate-700 font-semibold tabular-nums">
+                              {fmt(unit * qty)}
+                            </span>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
