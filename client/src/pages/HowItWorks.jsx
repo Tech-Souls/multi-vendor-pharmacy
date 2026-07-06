@@ -145,7 +145,6 @@ export default function HowItWorks() {
                 : [
                     { title: "Register Clinic Profile", desc: "Submit your professional credentials (GDC, NMC, etc.) for registration validation." },
                     { title: "Link with a Registered Prescriber", desc: "Send an association request to your independent prescriber's inbox via PrescribeLink™." },
-                    { title: "Submit Rx Requests", desc: "Provide required patient consulting documentation, consent files, and clinical logs." },
                     { title: "Prescriber Sign-off & Payment", desc: "Once authorized by your linked prescriber, clear the balance to trigger immediate fulfillment." }
                   ]
               ).map((step, idx) => (
@@ -189,7 +188,6 @@ export default function HowItWorks() {
                     ]
                   : [
                       "Supports multiple concurrent prescriber links",
-                      "Secure patient consent file uploading (PDF, PNG)",
                       "Independent checkout and delivery coordination",
                       "Comprehensive, compliant audit-trail logging"
                     ]

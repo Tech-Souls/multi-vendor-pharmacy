@@ -58,11 +58,6 @@ const PrescriptionRequestSchema = new mongoose.Schema(
       type: String,
     },
 
-    consentDocumentation: {
-      type: String,
-      required: false,
-    },
-
     status: {
       type: String,
       enum: ["pending", "approved", "rejected"],
