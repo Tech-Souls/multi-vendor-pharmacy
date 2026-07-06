@@ -326,12 +326,7 @@ const Prescriptions = () => {
                           </span>
                         </div>
                       )}
-                      {rx.consentDocumentation && (
-                        <button onClick={() => window.open(rx.consentDocumentation, "_blank")}
-                          className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-700 border border-slate-200 rounded-xl text-[10px] font-bold hover:bg-slate-200 transition-colors">
-                          <Eye size={12} /> <span className="hidden xs:inline">Consent</span>
-                        </button>
-                      )}
+                      
                       <div className="flex gap-2">
                         {rx.status === "pending" && (
                           <>

@@ -297,7 +297,6 @@ export const getAdminPrescriptionRequests = async (req, res) => {
       medications: item.productsRequired?.map((p) => ({ _id: p._id, name: p.name })) || [],
       clinicalNotes: item.clinicalNotes || "",
       treatment: item.treatment || "",
-      consentDocumentation: item.consentDocumentation ? `http://localhost:4000/${item.consentDocumentation}` : "No documentation provided",
       status: item.status || "pending",
       createdAt: item.createdAt,
     }));

@@ -23,8 +23,6 @@ const PrescriberLink = () => {
   const [searching, setSearching]           = useState(false);
   const [searchResults, setSearchResults]   = useState([]);
   const [activePrescribers, setActivePrescribers] = useState([]);
-  const [consentFile, setConsentFile]       = useState(null);
-  const [consentPreview, setConsentPreview] = useState(null);
   const [selectedName, setSelectedName]     = useState("");
   const [productQuery, setProductQuery]     = useState("");
   const [availableProducts, setAvailableProducts] = useState([]);
@@ -109,35 +107,25 @@ const PrescriberLink = () => {
     } finally { setLoading(false); }
   };
 
-  const handlePrescriptionSubmit = async () => {
-    if (!requestData.prescriberId)    return toast.error("Select a linked prescriber");
-    if (!requestData.patientFirstName || !requestData.patientLastName) return toast.error("Enter patient name");
-    if (!consentFile)                 return toast.error("Upload consent documentation");
+  // frontend: PrescriberLink.jsx
+const handlePrescriptionSubmit = async () => {
+  if (!requestData.prescriberId)    return toast.error("Select a linked prescriber");
+  if (!requestData.patientFirstName || !requestData.patientLastName) return toast.error("Enter patient name");
 
-    setLoading(true);
-    try {
-      const fd = new FormData();
-      fd.append("consentFile", consentFile);
-      fd.append("prescriberId",     requestData.prescriberId);
-      fd.append("patientFirstName", requestData.patientFirstName);
-      fd.append("patientLastName",  requestData.patientLastName);
-      fd.append("dob",              requestData.dob);
-      fd.append("consultationDate", requestData.consultationDate);
-      fd.append("treatment",        requestData.treatment);
-      fd.append("clinicalNotes",    requestData.clinicalNotes);
-      fd.append("productsRequired", JSON.stringify(selectedProducts.map(p => p._id)));
+  setLoading(true);
+  try {
+    await axios.post(`${BASE}/api/prescriber-link/request-prescription`, {
+      ...requestData,
+      productsRequired: selectedProducts.map(p => p._id),
+    }, { headers: headers() }); // no need to set Content-Type, axios defaults to application/json
 
-      await axios.post(`${BASE}/api/prescriber-link/request-prescription`, fd, {
-        headers: { ...headers(), "Content-Type": "multipart/form-data" },
-      });
-
-      toast.success("Submitted to prescriber!");
-      setConsentFile(null); setConsentPreview(null); setSelectedProducts([]);
-      setRequestData(p => ({ ...p, patientFirstName: "", patientLastName: "", dob: "", clinicalNotes: "" }));
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Submission failed");
-    } finally { setLoading(false); }
-  };
+    toast.success("Submitted to prescriber!");
+    setSelectedProducts([]);
+    setRequestData(p => ({ ...p, patientFirstName: "", patientLastName: "", dob: "", clinicalNotes: "" }));
+  } catch (err) {
+    toast.error(err.response?.data?.message || "Submission failed");
+  } finally { setLoading(false); }
+};
 
   const selectClass = `${inputClass} cursor-pointer`;
 
@@ -344,32 +332,6 @@ const PrescriberLink = () => {
                   className={`${inputClass} resize-none`} />
               </Field>
 
-              {/* Consent Upload */}
-              <Field label="Consent Documentation *">
-                <label className="relative flex flex-col items-center justify-center border-2 border-dashed border-slate-700 rounded-xl p-4 hover:border-violet-500/50 hover:bg-slate-800/50 transition-all cursor-pointer">
-                  <input type="file" accept="image/*,.pdf" onChange={e => {
-                    const f = e.target.files[0];
-                    if (f) { setConsentFile(f); setConsentPreview(URL.createObjectURL(f)); }
-                  }} className="absolute inset-0 opacity-0 cursor-pointer" />
-                  {consentPreview ? (
-                    <div className="flex items-center gap-3">
-                      <img src={consentPreview} alt="Preview" className="w-14 h-14 object-cover rounded-xl border border-slate-700" />
-                      <div>
-                        <p className="text-xs font-bold text-white truncate max-w-[160px]">{consentFile?.name}</p>
-                        <p className="text-[10px] text-emerald-400 font-bold mt-0.5 flex items-center gap-1">
-                          <CheckCircle size={10} /> Ready to upload
-                        </p>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <Upload size={20} className="text-slate-600 mb-1.5" />
-                      <p className="text-xs font-bold text-slate-500">Click to upload consent form</p>
-                      <p className="text-[10px] text-slate-600 mt-0.5">Image or PDF</p>
-                    </>
-                  )}
-                </label>
-              </Field>
 
               <button onClick={handlePrescriptionSubmit} disabled={loading}
                 className="w-full py-3 bg-slate-600 text-white rounded-xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-slate-500 active:scale-[0.98] transition-all disabled:opacity-50 shadow-lg">
