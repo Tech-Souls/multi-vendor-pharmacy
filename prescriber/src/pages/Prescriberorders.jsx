@@ -53,7 +53,7 @@ const PrescriberOrders = () => {
   return (
     <div className="min-h-screen bg-slate-50 antialiased">
       <PrescriberHeader title="My Orders" />
-      <div className="max-w-5xl mx-auto px-5 md:px-8 py-8 space-y-6">
+      <div className="max-w-5xl mx-auto px-4 sm:px-5 md:px-8 py-6 sm:py-8 space-y-6">
 
         {/* Search + Filter */}
         <div className="flex flex-col sm:flex-row gap-3">
@@ -66,10 +66,10 @@ const PrescriberOrders = () => {
               className="w-full pl-10 pr-4 py-2.5 text-sm bg-white border border-slate-200 rounded-xl outline-none focus:border-slate-400 transition-colors shadow-sm"
             />
           </div>
-          <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
+          <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1 sm:pb-0">
             {statuses.map(s => (
               <button key={s} onClick={() => setFilter(s)}
-                className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all capitalize ${
+                className={`px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all capitalize flex-shrink-0 ${
                   filter === s ? 'bg-slate-800 text-white shadow-sm' : 'bg-white border border-slate-200 text-slate-500 hover:border-slate-400'
                 }`}>
                 {s}
@@ -98,40 +98,43 @@ const PrescriberOrders = () => {
               const total = getOrderTotal(order);
 
               return (
-                <div key={order._id} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 hover:shadow-md transition-all">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-center gap-4">
+                <div key={order._id} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 sm:p-5 hover:shadow-md transition-all">
+                  {/* Header Row */}
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
                       <div className={`w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 ${cfg.color.split(' ')[0]}`}>
                         <Icon size={18} className={cfg.color.split(' ')[1]} />
                       </div>
-                      <div>
+                      <div className="min-w-0">
                         <p className="text-sm font-semibold text-slate-800 font-mono">#{order._id?.slice(-8).toUpperCase()}</p>
                         <p className="text-xs text-slate-400 mt-0.5">
                           {order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-GB') : '—'}
                         </p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm font-bold text-slate-800">{fmt(total)}</p>
-                      <span className={`mt-1 inline-block text-[10px] font-bold px-3 py-1 rounded-full border capitalize ${cfg.color}`}>
+                    <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+                      <span className={`text-[10px] font-bold px-3 py-1 rounded-full border capitalize ${cfg.color}`}>
                         {cfg.label}
                       </span>
+                      <p className="text-sm font-bold text-slate-800 whitespace-nowrap">{fmt(total)}</p>
                     </div>
                   </div>
 
                   {/* Items List */}
                   {order.items?.length > 0 && (
-                    <div className="mt-5 pt-4 border-t border-slate-50 space-y-2">
+                    <div className="mt-4 sm:mt-5 pt-3 sm:pt-4 border-t border-slate-50 space-y-2">
                       {order.items.map((item, idx) => {
                         const unit = getUnitPrice(item);
                         const qty  = item.quantity || 1;
                         return (
                           <div key={idx} className="flex justify-between items-center text-xs">
-                            <span className="text-slate-600 font-medium truncate pr-4">
-                              {item.productName || item.name || item.medicineId?.name || 'Unknown Item'}
-                              <span className="text-slate-400 ml-2">×{qty}</span>
+                            <span className="text-slate-600 font-medium truncate pr-2 sm:pr-4">
+                              <span className="block sm:inline">
+                                {item.productName || item.name || item.medicineId?.name || 'Unknown Item'}
+                              </span>
+                              <span className="text-slate-400 ml-1 sm:ml-2">×{qty}</span>
                             </span>
-                            <span className="text-slate-700 font-semibold tabular-nums">
+                            <span className="text-slate-700 font-semibold tabular-nums whitespace-nowrap">
                               {fmt(unit * qty)}
                             </span>
                           </div>
