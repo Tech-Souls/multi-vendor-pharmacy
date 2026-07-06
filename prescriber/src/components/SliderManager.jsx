@@ -166,10 +166,10 @@ const handleDelete = async (id) => {
       <div className="p-6 max-w-7xl mx-auto">
         {/* Professional Title Block Section */}
         <div className="mb-6">
-          <h1 className="text-xl font-bold border-b border-slate-100 pb-2 inline-block text-slate-900">
+          <h1 className="text-lg sm:text-xl md:text-2xl font-bold border-b border-slate-100 pb-2 inline-block text-slate-900">
             Slider Management Console
           </h1>
-          <p className="text-slate-500 text-xs mt-1">
+          <p className="text-slate-500 text-xs">
             Configure promotional displays, target links, and imagery mapped to the application hero slider track.
           </p>
         </div>

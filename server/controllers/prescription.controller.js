@@ -1,4 +1,5 @@
 import Prescription from "../models/Prescription.js";
+import PrescriptionRequest from "../models/PrescriptionRequest.js";
 import Medicine from "../models/medicines.js";
 import fs from "fs";
 
@@ -159,7 +160,7 @@ export const getMyPrescriptions = async (req, res) => {
 
 export const deletePrescription = async (req, res) => {
   try {
-    const deleted = await Prescription.findByIdAndDelete(req.params.id);
+    const deleted = await PrescriptionRequest.findByIdAndDelete(req.params.id);
     
     if (!deleted) {
       return res.status(404).json({ message: 'Prescription not found' });

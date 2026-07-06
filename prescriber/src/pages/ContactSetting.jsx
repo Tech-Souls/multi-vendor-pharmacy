@@ -101,22 +101,26 @@ const ContactSetting = () => {
       <div className="max-w-4xl mx-auto space-y-8">
 
         {/* Header */}
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-slate-800 rounded-xl flex items-center justify-center">
+        <div className="flex items-start sm:items-center gap-3 pt-15 sm:pt-0 pb-2 sm:pb-0">
+          <div className="w-10 h-10 bg-slate-800 rounded-xl flex items-center justify-center flex-shrink-0">
             <Settings size={18} className="text-white" />
           </div>
           <div>
-            <h1 className="text-xl font-semibold text-slate-800">Contact Settings</h1>
-            <p className="text-sm text-slate-500">Manage clinic details and incoming messages</p>
+            <h1 className="text-lg sm:text-xl font-semibold text-slate-800">Contact Settings</h1>
+            <p className="text-xs sm:text-sm text-slate-500">Manage clinic details and incoming messages</p>
           </div>
         </div>
 
         {/* Clinic Details */}
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-2">
-            <div className="w-2 h-2 bg-teal-500 rounded-full" />
-            <h2 className="text-base font-semibold text-slate-700">Clinic Details</h2>
-            <span className="ml-auto text-xs text-slate-400">Update fields you want to change</span>
+          <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-2">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-teal-500 rounded-full flex-shrink-0" />
+              <h2 className="text-sm sm:text-base font-semibold text-slate-700">Clinic Details</h2>
+            </div>
+            <span className="text-xs text-slate-400 sm:ml-auto">
+              Update fields you want to change
+            </span>
           </div>
 
           <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">

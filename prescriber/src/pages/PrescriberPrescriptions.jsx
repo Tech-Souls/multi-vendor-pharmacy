@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FileText, Search, Eye, Trash2 } from 'lucide-react';
-import { useNavigate, useSearchParams } from 'react-router-dom'; // 👈 ADD useSearchParams
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import PrescriberHeader from '../components/prescriber/PrescriberHeader';
 import API from '../api/axios';
 import toast from "react-hot-toast";
@@ -14,13 +14,12 @@ const statusConfig = {
 
 const PrescriberPrescriptions = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams(); // 👈 ADD this
+  const [searchParams] = useSearchParams();
   const [prescriptions, setPrescriptions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
 
-  // Check if we're viewing a specific prescription
   const prescriptionId = searchParams.get('prescriptionId');
 
   useEffect(() => {
@@ -96,22 +95,20 @@ const PrescriberPrescriptions = () => {
     }
   };
 
- const handleStatusUpdate = async (prescriptionId, status) => {
-  try {
-    // ✅ prescriber-link route use karo
-    await API.patch(`/prescriber-link/verify-request/${prescriptionId}`, { status });
-    setPrescriptions(prev => prev.map(p => 
-      p._id === prescriptionId ? { ...p, status } : p
-    ));
-    toast.success(`Prescription ${status}`);
-  } catch (error) {
-    console.error('Failed to update status:', error);
-    toast.error(error.response?.data?.message || 'Unable to update');
-  }
-};
+  const handleStatusUpdate = async (prescriptionId, status) => {
+    try {
+      await API.patch(`/prescriber-link/verify-request/${prescriptionId}`, { status });
+      setPrescriptions(prev => prev.map(p => 
+        p._id === prescriptionId ? { ...p, status } : p
+      ));
+      toast.success(`Prescription ${status}`);
+    } catch (error) {
+      console.error('Failed to update status:', error);
+      toast.error(error.response?.data?.message || 'Unable to update');
+    }
+  };
 
   const handleViewPrescription = (id) => {
-    // Navigate to dashboard with prescriptionId param
     navigate(`/dashboard?page=prescriptions&prescriptionId=${id}`);
   };
 
@@ -132,7 +129,7 @@ const PrescriberPrescriptions = () => {
   return (
     <div className="min-h-screen bg-slate-50 antialiased">
       <PrescriberHeader title="Prescriptions" />
-      <div className="max-w-5xl mx-auto px-5 md:px-8 py-8 space-y-6">
+      <div className="max-w-5xl mx-auto px-4 sm:px-5 md:px-8 py-6 sm:py-8 space-y-6">
 
         {/* Search + Filter */}
         <div className="flex flex-col sm:flex-row gap-3">
@@ -145,10 +142,10 @@ const PrescriberPrescriptions = () => {
               className="w-full pl-9 pr-4 py-2.5 text-sm bg-white border border-slate-200 rounded-xl outline-none focus:border-slate-400"
             />
           </div>
-          <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
+          <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1 sm:pb-0">
             {statuses.map(s => (
               <button key={s} onClick={() => setFilter(s)}
-                className={`px-3 py-2 rounded-xl text-xs font-semibold whitespace-nowrap capitalize transition-all ${filter === s ? 'bg-slate-800 text-white' : 'bg-white border border-slate-200 text-slate-500 hover:border-slate-400'
+                className={`px-3 py-2 rounded-xl text-xs font-semibold whitespace-nowrap capitalize transition-all flex-shrink-0 ${filter === s ? 'bg-slate-800 text-white' : 'bg-white border border-slate-200 text-slate-500 hover:border-slate-400'
                   }`}>
                 {s}
               </button>
@@ -170,45 +167,123 @@ const PrescriberPrescriptions = () => {
           </div>
         ) : (
           <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="bg-slate-50/50 border-b border-slate-100">
-                  {['Patient', 'Date', 'Treatment', 'Status', '', ''].map((h, i) => (
-                    <th key={i} className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-slate-400">{h}</th>
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="bg-slate-50/50 border-b border-slate-100">
+                    {['Patient', 'Date', 'Treatment', 'Status', '', ''].map((h, i) => (
+                      <th key={i} className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-slate-400">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {filtered.map(p => (
+                    <tr key={p._id} className="hover:bg-slate-50/50 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-slate-100 rounded-xl flex items-center justify-center shrink-0">
+                            <span className="text-xs font-bold text-slate-600">{getInitial(p)}</span>
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-slate-700">{getPatientName(p)}</p>
+                            <p className="text-[10px] text-slate-400 font-mono">#{p._id?.slice(-6).toUpperCase()}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-xs text-slate-500">
+                        {p.createdAt ? new Date(p.createdAt).toLocaleDateString('en-GB', {
+                          day: 'numeric', month: 'short', year: 'numeric'
+                        }) : '—'}
+                      </td>
+                      <td className="px-6 py-4 text-xs text-slate-500">
+                        {p.treatment || p.method || '—'}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border capitalize ${statusConfig[p.status] || 'bg-slate-50 text-slate-500 border-slate-200'
+                          }`}>
+                          {p.status || 'unknown'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-right space-x-2">
+                        {p.status === 'pending' ? (
+                          <>
+                            <button
+                              onClick={() => handleStatusUpdate(p._id, 'approved')}
+                              className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-[10px] font-black hover:bg-blue-700 transition-all"
+                            >
+                              approve
+                            </button>
+                            <button
+                              onClick={() => handleStatusUpdate(p._id, 'rejected')}
+                              className="px-3 py-1.5 border border-slate-300 text-slate-700 rounded-lg text-[10px] font-black hover:bg-slate-100 transition-all"
+                            >
+                              reject
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            onClick={() => handleViewPrescription(p._id)}
+                            className="p-2 text-slate-300 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-all"
+                          >
+                            <Eye size={14} />
+                          </button>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <button
+                          onClick={() => handleDelete(p._id)}
+                          className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </td>
+                    </tr>
                   ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-50">
-                {filtered.map(p => (
-                  <tr key={p._id} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-slate-100 rounded-xl flex items-center justify-center shrink-0">
-                          <span className="text-xs font-bold text-slate-600">{getInitial(p)}</span>
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold text-slate-700">{getPatientName(p)}</p>
-                          <p className="text-[10px] text-slate-400 font-mono">#{p._id?.slice(-6).toUpperCase()}</p>
-                        </div>
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden divide-y divide-slate-100">
+              {filtered.map(p => (
+                <div key={p._id} className="p-4 space-y-3 hover:bg-slate-50/50 transition-colors">
+                  {/* Patient Info */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-slate-100 rounded-xl flex items-center justify-center shrink-0">
+                        <span className="text-xs font-bold text-slate-600">{getInitial(p)}</span>
                       </div>
-                    </td>
-                    <td className="px-6 py-4 text-xs text-slate-500">
-                      {p.createdAt ? new Date(p.createdAt).toLocaleDateString('en-GB', {
-                        day: 'numeric', month: 'short', year: 'numeric'
-                      }) : '—'}
-                    </td>
-                    <td className="px-6 py-4 text-xs text-slate-500">
-                      {p.treatment || p.method || '—'}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border capitalize ${statusConfig[p.status] || 'bg-slate-50 text-slate-500 border-slate-200'
-                        }`}>
-                        {p.status || 'unknown'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right space-x-2">
+                      <div>
+                        <p className="text-sm font-semibold text-slate-700">{getPatientName(p)}</p>
+                        <p className="text-[10px] text-slate-400 font-mono">#{p._id?.slice(-6).toUpperCase()}</p>
+                      </div>
+                    </div>
+                    <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border capitalize flex-shrink-0 ${statusConfig[p.status] || 'bg-slate-50 text-slate-500 border-slate-200'
+                      }`}>
+                      {p.status || 'unknown'}
+                    </span>
+                  </div>
+
+                  {/* Details Row */}
+                  <div className="flex items-center justify-between text-xs">
+                    <div className="space-y-1">
+                      <p className="text-slate-500">
+                        <span className="font-medium text-slate-700">Date:</span>{' '}
+                        {p.createdAt ? new Date(p.createdAt).toLocaleDateString('en-GB', {
+                          day: 'numeric', month: 'short', year: 'numeric'
+                        }) : '—'}
+                      </p>
+                      <p className="text-slate-500">
+                        <span className="font-medium text-slate-700">Treatment:</span>{' '}
+                        {p.treatment || p.method || '—'}
+                      </p>
+                    </div>
+                    
+                    {/* Action Buttons */}
+                    <div className="flex items-center gap-2">
                       {p.status === 'pending' ? (
-                        <>
+                        <div className="flex flex-col sm:flex-row gap-1.5">
                           <button
                             onClick={() => handleStatusUpdate(p._id, 'approved')}
                             className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-[10px] font-black hover:bg-blue-700 transition-all"
@@ -221,28 +296,26 @@ const PrescriberPrescriptions = () => {
                           >
                             reject
                           </button>
-                        </>
+                        </div>
                       ) : (
                         <button
-                          onClick={() => handleViewPrescription(p._id)} // 👈 UPDATED
+                          onClick={() => handleViewPrescription(p._id)}
                           className="p-2 text-slate-300 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-all"
                         >
                           <Eye size={14} />
                         </button>
                       )}
-                    </td>
-                    <td className="px-6 py-4 text-right">
                       <button
                         onClick={() => handleDelete(p._id)}
                         className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
                       >
                         <Trash2 size={14} />
                       </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>

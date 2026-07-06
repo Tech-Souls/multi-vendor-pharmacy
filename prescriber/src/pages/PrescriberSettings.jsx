@@ -34,9 +34,9 @@ const PrescriberSettings = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 antialiased">
-
+      
       {/* ── Page Header ── */}
-      <div className="bg-white border-b border-slate-100 px-6 md:px-8 py-5">
+      <div className="bg-white border-b border-slate-100 px-6 md:px-8 py-5 pt-18 sm:pt-4">
         <div className="max-w-5xl mx-auto flex items-center gap-3">
           <div className="w-9 h-9 bg-slate-100 rounded-xl flex items-center justify-center">
             <MdSettings size={17} className="text-slate-600" />
