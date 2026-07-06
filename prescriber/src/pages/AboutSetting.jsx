@@ -108,7 +108,7 @@ const AboutSettings = () => {
 
   return (
     <div className="p-4 sm:p-8 max-w-2xl  text-slate-600 overflow-hidden">
-      <h1 className="text-2xl font-bold mb-8 text-slate-800">About Page Configuration</h1>
+     <h1 className="text-lg sm:text-xl md:text-2xl font-bold mb-4 text-slate-800">About Page Configuration</h1>
       <div className="space-y-3">
 
         {[

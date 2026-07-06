@@ -1,4 +1,5 @@
 import Prescription from "../models/Prescription.js";
+import PrescriptionRequest from "../models/PrescriptionRequest.js";
 import Medicine from "../models/medicines.js";
 import fs from "fs";
 
@@ -140,15 +141,26 @@ export const checkUserPrescriptionStatus = async (req, res) => {
 };
 
 export const getMyPrescriptions = async (req, res) => {
-  const prescriptions = await Prescription.find({ user: req.user._id })
-    .populate('medications', 'name')
+  try {
+    const userId = req.user._id;
+
+    const PrescriptionRequest = (await import('../models/PrescriptionRequest.js')).default;
+    const requests = await PrescriptionRequest.find({
+      prescriberId: userId
+    })
+    .populate('requesterId', 'firstName lastName email')
     .sort({ createdAt: -1 });
-  res.json({ prescriptions });
+
+    res.json({ prescriptions: requests });
+  } catch (error) {
+    console.error('getMyPrescriptions error:', error);
+    res.status(500).json({ message: 'Failed to fetch prescriptions' });
+  }
 };
 
 export const deletePrescription = async (req, res) => {
   try {
-    const deleted = await Prescription.findByIdAndDelete(req.params.id);
+    const deleted = await PrescriptionRequest.findByIdAndDelete(req.params.id);
     
     if (!deleted) {
       return res.status(404).json({ message: 'Prescription not found' });
@@ -165,23 +177,36 @@ export const deletePrescription = async (req, res) => {
 export const getPrescriptionById = async (req, res) => {
   try {
     const { id } = req.params;
-    
-    const prescription = await Prescription.findById(id)
+
+    // Pehle Prescription model mein dhundo
+    let prescription = await Prescription.findById(id)
       .populate('user', 'firstName lastName email')
-      .populate('medications', 'name brand dosage price')
-      .populate('medicine', 'name brand dosage price');
-    
+      .populate('medications', 'name brand dosage price');
+
+    // Agar nahi mila toh PrescriptionRequest mein dhundo
     if (!prescription) {
-      return res.status(404).json({ message: 'Prescription not found' });
+      const PrescriptionRequest = (await import('../models/PrescriptionRequest.js')).default;
+      prescription = await PrescriptionRequest.findById(id)
+        .populate('requesterId', 'firstName lastName email')
+        .populate('productsRequired', 'name');
+
+      if (!prescription) {
+        return res.status(404).json({ message: 'Prescription not found' });
+      }
+
+      // Same format mein return karo
+      return res.status(200).json({
+        _id:            prescription._id,
+        patientName:    prescription.patientName,
+        treatment:      prescription.treatment,
+        status:         prescription.status,
+        createdAt:      prescription.createdAt,
+        clinicalNotes:  prescription.clinicalNotes,
+        medications:    prescription.productsRequired || [],
+        method:         'request',
+      });
     }
-    
-    // Check if user is authorized to view this prescription
-    if (prescription.user._id.toString() !== req.user._id.toString() && 
-        req.user.role !== 'admin' && 
-        req.user.role !== 'staff') {
-      return res.status(403).json({ message: 'Not authorized to view this prescription' });
-    }
-    
+
     res.status(200).json(prescription);
   } catch (error) {
     console.error('Error fetching prescription:', error);

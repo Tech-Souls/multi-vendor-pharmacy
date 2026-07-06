@@ -3,7 +3,7 @@ import { User, Search, Phone, Mail, MapPin, Trash2, Calendar, CreditCard, Info }
 import PrescriberHeader from '../components/prescriber/PrescriberHeader';
 import API from '../api/axios';
 import toast, { Toaster } from "react-hot-toast";
-
+console.log
 
 const PrescriberPatient = () => {
   const [patients, setPatients] = useState([]);
@@ -16,10 +16,6 @@ useEffect(() => {
     try {
       setLoading(true);
       const res  = await API.get('/prescriber-link/patients');
-
-      // ── DEBUG ──
-      console.log('=== PATIENTS API RESPONSE ===', res.data);
-      // ── END DEBUG ──
 
       const data = Array.isArray(res.data)
         ? res.data

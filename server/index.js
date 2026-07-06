@@ -59,6 +59,8 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+
+
 // Expose the 'uploads' folder statically so the frontend can retrieve images cleanly
 app.use("/uploads", express.static("uploads"));
 

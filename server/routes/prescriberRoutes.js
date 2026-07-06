@@ -29,6 +29,9 @@ router.delete("/patients/:patientId", ...prescriberOnly, deleteMyPatient);
 router.get("/active-links",        protect, getActiveLinks);
 router.post("/request-prescription", protect, submitPrescriptionRequest);
 
+router.patch("/verify-request/:id",  ...prescriberOnly, verifyPrescriptionRequest); // ✅ add karo
+
+
 // Change these 4 admin routes — remove the separate protect, spread adminOnly
 router.get("/admin/pending",              ...adminOnly, getAdminPendingLinks);
 router.get("/admin/requests",             ...adminOnly, getAdminPrescriptionRequests);

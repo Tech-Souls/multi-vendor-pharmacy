@@ -31,6 +31,8 @@ router.get('/my', protect, getMyPrescriptions);
 // Staff only (admin or prescriber)
 router.get("/pending",              ...staffOnly,      getPendingPrescriptions);
 router.patch("/verify/:id",         ...staffOnly,      verifyPrescription);
+
+
 router.delete('/:id', protect, deletePrescription);
 router.get('/:id', protect, getPrescriptionById); // 👈 ADD THIS - must be after '/my' to avoid conflict
 
